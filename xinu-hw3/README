@@ -1,0 +1,192 @@
+README: basic information about the directory tree and how to build an image.
+Embedded XINU, Copyright (C) 2007.  All rights reserved.
+$Id: README 193 2007-07-13 22:46:44Z phinze $
+----
+
+Embedded XINU
+Version: 1.0
+
+1. What is Embedded XINU?
+2. Directory Structure
+3. Prerequisites
+4. Installation Instructions
+	4.1 Build Embedded XINU
+	4.2 Make serial and network connections
+	4.3 Enter Common Firmware Environment prompt
+	4.4 Set IP address
+	4.5 Load image over TFTP
+4. Links
+
+
+-------------------------
+1. What is Embedded XINU?
+-------------------------
+
+XINU ("XINU Is Not Unix", a recursive acronym) is a Unix-like operating system
+originally developed by Douglas Comer for instructional purposes at Purdue
+University in the 1980s.
+
+Embedded XINU is a reimplementation of the original XINU operating system on
+the MIPS processor which is able to run on inexpensive wireless routers and is
+suitable for courses and research in the areas of Operating Systems, Hardware
+Systems, Embedded Systems, and Compilers.
+
+
+----------------------
+2. Directory Structure
+----------------------
+
+Once you have downloaded and extracted the xinu tarball, you will see a
+basic directory structure:
+
+	AUTHORS   include/  LICENSE   README  system/  tty/
+	compile/  lib/      loader/   shell/  test/    uart/
+
+AUTHORS   a brief history of contributors to the XINU operating system in
+          it's varying iterations.
+
+compile/  contains the Makefile and other necessities for building the XINU
+          system once you have a cross-compiler.
+
+include/  contains all the header files used by XINU.
+
+lib/      contains a folder (libxc/) with a Makefile and source for the 
+          library, as well the pre-compiled library.
+
+LICENSE   the license under which this project falls.
+
+loader/   contains assembly files and is where the bootloader will begin
+          execution of O/S code.
+
+README    this document.
+
+shell/    contains the source for all XINU shell related functions.
+
+system/   contains the source for all XINU system functions such as the
+          nulluser process (initialize.c) as well as code to set up a C
+          environment (startup.S).
+
+test/     contains a number of testcases (which can be run using the shell
+          command `testsuite`).
+
+tty/      contains the source for the tty driver.
+
+uart/     contains the source for the uart driver.
+
+
+----------------------------
+3. Prerequisites
+----------------------------
+
+3.1 Supported platform with hardware modification
+--------------------------------------------------
+
+To run Embedded XINU you need a supported router.  Currently, Embedded XINU
+supports Linksys WRT54GL and the Linksys WRT54G.  For an updated list of
+supported platforms, visit:
+
+http://xinu.mscs.mu.edu/List_of_supported_platforms
+
+In order to communicate with the router, you need to perform a hardware
+modification that will expose the serial port that exists on the PCB.  For more
+information on this process, see:
+
+http://xinu.mscs.mu.edu/HOWTO:Modify_the_Linksys_hardware
+
+3.2 Cross-compiler
+------------------
+
+To build Embedded XINU you will need a cross-compiler from your host computer's
+architecture to MIPSEL (little endian MIPS).  Instructions on how to do this
+can be found here:
+
+http://xinu.mscs.mu.edu/HOWTO:Build_and_Deploy_XINU#Cross-Compiler
+
+3.3 Serial communication software
+---------------------------------
+
+Any serial communication software will do. The XINU Console Tools include a
+program called tty-connect which can serve the purpose for a UNIX environment.
+More information about the XINU Console Tools can be found at:
+
+http://xinu.mscs.mu.edu/XINU_Console_Tools
+
+3.4 TFTP server software
+------------------------
+
+A TFTP server will provide the router with the ability to download and run the
+compiled Embedded XINU image.  
+
+
+----------------------------
+4. Installation Instructions
+----------------------------
+
+4.1 Build Embedded XINU
+-----------------------
+
+Update the MIPS_ROOT and MIPS_PREFIX variables in compile/makeVars to correctly
+point to the cross-compiler on your machine.
+
+Then, from the compile directory, simply run make, which should leave you with
+a xinu.boot file.  This is the binary image you need to transfer to your router
+for it to run Embedded XINU.
+
+4.2 Make serial and network connections
+---------------------------------------
+
+After creating the xinu.boot image you can connect the router's serial port to
+your computer and open up a connection using the following settings:
+
+	- 8 data bits, no parity bit, and 1 stop bit (8N1)
+	- 115200 bps
+
+4.3 Enter Common Firmware Environment prompt
+--------------------------------------------
+
+With the serial connection open, power on the router and immediately start
+sending breaks (Control-C) to the device, if your luck holds you will be
+greeted with a CFE prompt.
+
+CFE>
+
+If the router seems to start booting up, you can powercycle and try again.
+
+4.4 Set IP address
+------------------
+
+By default, the router will have a static IP address of 192.168.1.1.  If you
+need to set a different address for your network, run one of the following
+commands:
+
+ifconfig eth0 -auto                      if you are using a DHCP server 
+ifconfig eth0 -addr=*.*.*.*              for a static IP address
+
+4.5 Load image over TFTP
+------------------------
+
+On a computer that is network accessible from the router, start your TFTP
+server and place the xinu.boot image in the root directory that the server
+makes available.
+
+Then, on the router type the command:
+
+CFE> boot -elf [TFTP server IP]:xinu.boot
+
+If all has gone correctly the router you will be greeted with the XINU Shell
+(xsh$ ), which means you are now running Embedded XINU!
+
+
+--------
+4. Links
+--------
+
+The Embedded XINU Wiki
+----------------------
+	The home of the Embedded XINU project
+	http://xinu.mscs.mu.edu
+
+Dr. Brylow's Embedded XINU Lab Infrastructure Page
+--------------------------------------------------
+	More information about the Embedded XINU Lab at Marquette University
+	http://www.mscs.mu.edu/~brylow/xinu/
