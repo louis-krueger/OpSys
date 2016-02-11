@@ -5,9 +5,9 @@
  * $Id: testcases.c 175 2008-01-30 01:18:27Z brylow $
  *
  * Modified by:
- * Louis Krueger
+ *
  * and
- * Sam Scheel
+ *
  */
 /* Embedded XINU, Copyright (C) 2007.  All rights reserved. */
 
