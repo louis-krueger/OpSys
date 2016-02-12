@@ -21,15 +21,15 @@ if [ -n $confirm ]; then
 			git push origin $branch
 			git checkout master
 		else
-			$error="1"
+			error="1"
 		fi
 	else
-		$error="1"
+		error="1"
 	fi
 else
-	$error="1"
+	error="1"
 fi
-if [ $error="1" ]; then
+if [ error="1" ]; then
 	echo "You seem unsure Sire, please go get some fresh air, exiting..."
 	exit 1;
 fi
