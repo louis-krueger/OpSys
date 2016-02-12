@@ -1,19 +1,25 @@
 /**
  * @file stdlib.h
- * 
- * $Id: stdlib.h 176 2007-07-12 01:23:06Z mschul $
  */
-/* Embedded XINU, Copyright (C) 2007.  All rights reserved. */
+/* Embedded Xinu, Copyright (C) 2009, 2013.  All rights reserved. */
 
 #ifndef _STDLIB_H_
 #define _STDLIB_H_
 
-int abs(int);
-int atoi(char *);
-long atol(char *);
-void bzero(void *, int);
-void qsort(char *, unsigned, int, int (*)(void));
-ulong rand(void);
-void srand(unsigned long);
+#include <stddef.h>
 
-#endif /* __STDLIB_H__ */
+int abs(int j);
+long labs(long j);
+int atoi(const char *nptr);
+long atol(const char *nptr);
+void bzero(void *s, size_t n);
+void qsort(void *base, size_t nmemb, size_t size,
+           int (*compar) (const void *, const void *));
+int rand(void);
+void srand(unsigned int seed);
+void *malloc(size_t size);
+void free(void *ptr);
+
+#define RAND_MAX 32767
+
+#endif                          /* _STDLIB_H_ */

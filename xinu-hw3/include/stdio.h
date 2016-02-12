@@ -1,48 +1,64 @@
 /**
  * @file stdio.h
- * @provides puts, printf, scanf
- *
- * $Id: stdio.h 181 2007-07-12 19:03:52Z brylow $
  */
-/* Embedded XINU, Copyright (C) 2007.  All rights reserved. */
-
-#include <kernel.h>
-#include <device.h>
-#include <stdarg.h>
+/* Embedded Xinu, Copyright (C) 2009, 2013.  All rights reserved. */
 
 #ifndef _STDIO_H_
 #define _STDIO_H_
 
-/**
- * Kernel output (for debugging use only)
+#include <stdarg.h>
+
+/*
+ * Standard in/out/err
+ * Note: The C99 specification states that they are macro expansions to a
+ * pointer to FILE.  I say, close enough for Xinu.
+ * C99 doc: http://www.open-std.org/JTC1/SC22/WG14/www/docs/n1256.pdf
  */
-syscall kprintf (char *,  ...);
-syscall kputc(device *, unsigned char);
-syscall kcheckc(void);
-syscall kgetc(void);
-syscall kungetc(unsigned char);
+
+/** @ingroup libxc
+ * Standard input  */
+#define stdin ((thrtab[thrcurrent]).fdesc[0])
+
+/** @ingroup libxc
+ * Standard output  */
+#define stdout ((thrtab[thrcurrent]).fdesc[1])
+
+/** @ingroup libxc
+ * Standard error  */
+#define stderr ((thrtab[thrcurrent]).fdesc[2])
+
+/* Formatted input  */
+int _doscan(const char *fmt, va_list ap,
+            int (*getch) (int, int), int (*ungetch) (int, int),
+            int arg1, int arg2);
+
+int fscanf(int dev, const char *format, ...);
 
 /**
- * Formatted input
+ * @ingroup libxc
  */
-int _doscan(register char *, register int **, int (*)(void), int (*)(char), int, int);
-int fscanf(int, char *, int);
-int sscanf(char *, char *, int);
-char *fgets(int, char *, int);
+#define scanf(fmt, ...)      fscanf(stdin, fmt, __VA_ARGS__)
 
-/**
- * Formatted output
- */
-void _doprnt(char *, va_list, int (*)(int, int), int);
-int fprintf(int, char *, ...);
-int sprintf(char *, char *, ...);
-int fputs(int, char *);
+int sscanf(const char *str, const char *format, ...);
 
-/**
- * CONSOLE input and output
- */
-#define puts(s)               fputs(CONSOLE, s)
-#define printf(...)      fprintf (CONSOLE, __VA_ARGS__)
-#define scanf(fmt, args)      fscanf(CONSOLE, fmt, args)
+/* Formatted output  */
+int _doprnt(const char *format, va_list,
+            int (*putc_func) (int, int), int putc_arg);
 
-#endif /* __STDIO_H__ */
+int fprintf(int dev, const char *format, ...) __printf_format(2, 3);
+int printf(const char *format, ...) __printf_format(1, 2);
+int sprintf(char *str, const char *format, ...) __printf_format(2, 3);
+
+/* Character and string input and output  */
+int fgetc(int dev);
+char *fgets(char *s, int n, int dev);
+int fputc(int c, int dev);
+int fputs(const char *s, int dev);
+
+/** @ingroup libxc */
+#define putchar(c) fputc((c), stdout)
+
+/** @ingroup libxc */
+#define getchar() fgetc(stdin)
+
+#endif                          /* _STDIO_H_ */

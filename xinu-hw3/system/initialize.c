@@ -1,148 +1,101 @@
 /**
  * @file initialize.c
- * @provides nulluser, sysinit
- *
- * $Id: initialize.c 191 2007-07-13 22:28:23Z brylow $
- */
-/* Embedded XINU, Copyright (C) 2007.  All rights reserved. */
-
-/** 
  * The system begins intializing after the C environment has been
- * established.  After intialization, the null process remains always in
- * a ready (PRREADY) or running (PRCURR) state.
+ * established.  After intialization, the null thread remains always in
+ * a ready (THRREADY) or running (THRCURR) state.
  */
+/* Embedded Xinu, Copyright (C) 2009, 2013.  All rights reserved. */
 
-#include <kernel.h>
-#include <platform.h>
-#include <device.h>
-#include <string.h>
-#include <mips.h>
-
-/* Linker provides start and end of image */
-extern   void   _start(void);   /* start of XINU code                    */    
-extern   void   *end;           /* end of XINU code                      */
+#include <xinu.h>
 
 /* Function prototypes */
-local       platforminit(void); /* determines platform-dependent settings*/
-local       sysinit(void);      /* intializes system structures          */
-void        testcases(void);	/* testing hook for your testcases       */
+static int sysinit(void);       /* intializes system structures   */
+static void print_os_info(void);        /* Print initial O/S data         */
+thread main(void);              /* Main program                   */
+
+/* Declarations of major kernel variables */
+struct thrent thrtab[NTHREAD];  /* Thread table                   */
+tid_typ thrcurrent;             /* Id of currently running thread      */
 
 /* Params set by startup.S */
-void            *minheap;       /* Bottom of heap (top of O/S stack)     */
-ulong           cpuid;          /* Processor id                          */
+void *memheap;                  /* Bottom of heap (top of O/S stack)   */
+ulong cpuid;                    /* Processor id                        */
 
-struct platform platform;       /* Platform specific configuration       */
+struct platform platform;       /* Platform specific configuration     */
 
 /**
- * Intializes the system and becomes the null process.
+ * Intializes the system and becomes the null thread.
  * This is where the system begins after the C environment has been 
  * established.  Interrupts are initially DISABLED, and must eventually 
- * be enabled explicitly.  This routine turns itself into the null process 
- * after initialization.  Because the null process must always remain ready 
+ * be enabled explicitly.  This routine turns itself into the null thread 
+ * after initialization.  Because the null thread must always remain ready 
  * to run, it cannot execute code that might cause it to be suspended, wait 
  * for a semaphore, or put to sleep, or exit.  In particular, it must not 
  * do I/O unless it uses kprintf for synchronous output.
  */
-int nulluser()
+void nulluser(void)
 {
-	kprintf(VERSION);  kprintf("\r\n\r\n");
-	
-	platforminit();
+    /* Platform-specific initialization  */
+    platforminit();
 
-#ifdef DETAIL
-	/* Output detected platform. */
-	kprintf("Processor identification: 0x%08X\r\n", cpuid);
-	kprintf("Detected platform as: %s\r\n\r\n",platform.name);
-#endif
+    /* General initialization  */
+    sysinit();
 
-	sysinit();
+    /* Standard Embedded Xinu processor and memory info */
+    print_os_info();
 
-	/* Output XINU memory layout */
-	kprintf("%10d bytes physical memory.\r\n", 
-		(ulong) platform.maxaddr & 0x7FFFFFFF );
-#ifdef DETAIL
-	kprintf("           [0x%08X to 0x%08X]\r\n",
-		(ulong) KSEG0_BASE, (ulong) (platform.maxaddr - 1));
-#endif 
-	kprintf("%10d bytes reserved system area.\r\n",
-		(ulong) _start - KSEG0_BASE);
-#ifdef DETAIL
-	kprintf("           [0x%08X to 0x%08X]\r\n",
-		(ulong) KSEG0_BASE, (ulong) _start - 1);
-#endif 
+    /* Call the main program */
+    main();
 
-	kprintf("%10d bytes XINU code.\r\n",
-		(ulong) &end - (ulong) _start);
-#ifdef DETAIL
-	kprintf("           [0x%08X to 0x%08X]\r\n",
-		(ulong) _start, (ulong) &end - 1);
-#endif 
+    /* null thread has nothing else to do but cannot exit  */
+    while (1)
+        ;
+}
 
-	kprintf("%10d bytes stack space.\r\n",
-		(ulong) minheap - (ulong) &end);
-#ifdef DETAIL
-	kprintf("           [0x%08X to 0x%08X]\r\n",
-		(ulong) &end, (ulong) minheap - 1);
-#endif 
+static void print_os_info(void)
+{
+    kprintf(VERSION);
+    kprintf("\r\n\r\n");
 
-	kprintf("%10d bytes heap space.\r\n",
-		(ulong) platform.maxaddr - (ulong) minheap);
-#ifdef DETAIL
-	kprintf("           [0x%08X to 0x%08X]\r\n\r\n",
-		(ulong) minheap, (ulong) platform.maxaddr - 1);
-#endif 
+    /* Output detected platform. */
+    kprintf("Processor identification: 0x%08X\r\n", cpuid);
+    kprintf("Detected platform as: %s, %s\r\n\r\n",
+            platform.family, platform.name);
 
-	kprintf("Hello XINU World!\r\n");
+    /* Output Xinu memory layout */
+    kprintf("%10d bytes physical memory.\r\n",
+            (ulong)platform.maxaddr - (ulong)platform.minaddr);
+    kprintf("           [0x%08X to 0x%08X]\r\n",
+            (ulong)platform.minaddr, (ulong)(platform.maxaddr - 1));
 
-	testcases();
 
-	while(1) 
-	{
-	}
+    /* Start of kernel in memory (provided by linker)  */
+    extern void _start(void);
+    kprintf("%10d bytes reserved system area.\r\n",
+            (ulong)_start - (ulong)platform.minaddr);
+    kprintf("           [0x%08X to 0x%08X]\r\n",
+            (ulong)platform.minaddr, (ulong)_start - 1);
+
+    kprintf("%10d bytes Xinu code.\r\n", (ulong)&_end - (ulong)_start);
+    kprintf("           [0x%08X to 0x%08X]\r\n",
+            (ulong)_start, (ulong)&_end - 1);
+
+    kprintf("%10d bytes stack space.\r\n", (ulong)memheap - (ulong)&_end);
+    kprintf("           [0x%08X to 0x%08X]\r\n",
+            (ulong)&_end, (ulong)memheap - 1);
+
+    kprintf("%10d bytes heap space.\r\n",
+            (ulong)platform.maxaddr - (ulong)memheap);
+    kprintf("           [0x%08X to 0x%08X]\r\n\r\n",
+            (ulong)memheap, (ulong)platform.maxaddr - 1);
+    kprintf("\r\n");
 }
 
 /**
- * Intializes all XINU data structures and devices.
+ * Intializes all Xinu data structures and devices.
  * @return OK if everything is initialized successfully
  */
-local sysinit(void)
+static int sysinit(void)
 {
-	return OK;
+    return OK;
 }
-
-/**
- * Determines and stores all platform specific information.
- * @return OK if everything is determined successfully
- */
-local platforminit(void)
-{
-	switch (cpuid & PRID_REV)
-	{
-		case PRID_REV_WRT54G:
-			strncpy(platform.name, "Linksys WRT54G", 16);
-			platform.maxaddr = (void *) (KSEG0_BASE | MAXADDR_WRT54G);
-			platform.time_base_freq = TIME_BASE_FREQ_WRT54G;
-			platform.uart_dll = UART_DLL_WRT54G;
-			break;
-		case PRID_REV_WRT54GL:
-			strncpy(platform.name, "Linksys WRT54GL", 16);
-			platform.maxaddr = (void *) (KSEG0_BASE | MAXADDR_WRT54GL);
-			platform.time_base_freq = TIME_BASE_FREQ_WRT54GL;
-			platform.uart_dll = UART_DLL_WRT54GL;
-			break;
-		case PRID_REV_WRT350N:
-			strncpy(platform.name, "Linksys WRT350N", 16);
-			platform.maxaddr = (void *) (KSEG0_BASE | MAXADDR_WRT350N);
-			platform.time_base_freq = TIME_BASE_FREQ_WRT350N;
-			platform.uart_dll = UART_DLL_WRT350N;
-			break;
-		default:
-			strncpy(platform.name, "Unknown Platform", 16);
-			platform.maxaddr = (void *) (KSEG0_BASE | MAXADDR_DEFAULT);
-			platform.time_base_freq = TIME_BASE_FREQ_DEFAULT;
-			return SYSERR;
-	}
-	
-	return OK;
-}
-

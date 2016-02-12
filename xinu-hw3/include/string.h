@@ -1,23 +1,28 @@
 /**
  * @file string.h
- *
- * $Id: string.h 176 2007-07-12 01:23:06Z mschul $
  */
-/* Embedded XINU, Copyright (C) 2007.  All rights reserved. */
+/* Embedded Xinu, Copyright (C) 2009, 2013.  All rights reserved. */
 
 #ifndef _STRING_H_
 #define _STRING_H_
 
-char *strcat(char *, char *);
-char *strncat(char *, char *, int);
-char *strchr (const char *, int);
-int strcmp(const char *, const char *);
-int strncmp(char *, char *, int);
-char *strcpy(char *, const char *);
-char *strncpy(char *, char *, int);
-int strlen(const char *);
+#include <stddef.h>
 
-int memcmp (const void *, const void *, int);
-int memcpy(void *, void *, int);
+void *memchr(const void *s, int c, size_t n);
+int memcmp(const void *s1, const void *s2, size_t n);
+void *memcpy(void *dest, const void *src, size_t n);
+void *memset(void *s, int c, size_t n);
 
-#endif /* __STRING_H__ */
+char *strchr(const char *s, int c);
+int strcmp(const char *s1, const char *s2);
+char *strcpy(char *dest, const char *src);
+size_t strlcpy(char *dest, const char *src, size_t destsize);
+size_t strlen(const char *s);
+char *strncat(char *dest, const char *src, size_t n);
+int strncmp(const char *s1, const char *s2, size_t n);
+char *strncpy(char *dest, const char *src, size_t n);
+size_t strnlen(const char *s, size_t maxlen);
+char *strrchr(const char *s, int c);
+char *strstr(const char *haystack, const char *needle);
+
+#endif                          /* _STRING_H_ */

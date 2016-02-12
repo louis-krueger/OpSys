@@ -1,3 +1,4 @@
+PLATFORM="$1"
 if [ -f vn ]; then
 	expr `cat vn` + 1 > vn
 else
@@ -8,4 +9,4 @@ if [ -z "$USER" ]; then
 fi
 HOST=`hostname`
 VN=`cat vn`
-echo "(Mips XINU) #$VN ("$USER"@"$HOST") "`date` > version
+echo "(Embedded Xinu) ($PLATFORM) #$VN ("$USER"@"$HOST") "`date` > version

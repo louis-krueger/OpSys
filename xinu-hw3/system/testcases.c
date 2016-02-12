@@ -5,28 +5,37 @@
  * $Id: testcases.c 175 2008-01-30 01:18:27Z brylow $
  *
  * Modified by:
- * Louis Krueger
+ *
  * and
- * Sam Scheel
+ *
  */
 /* Embedded XINU, Copyright (C) 2007.  All rights reserved. */
 
-#include <kernel.h>
-#include <device.h>
-#include <stdio.h>
-#include <uart.h>
+#include <xinu.h>
+
+devcall putc(int dev, char c) { return 0; }
+
 
 /**
  * testcases - called after initialization completes to test things.
  */
 void testcases(void)
 {
-	int c;
+    int c;
 
-	kprintf("===TEST BEGIN===");
+    kprintf("===TEST BEGIN===\r\n");
 
-	// TODO: Test your operating system!
+    c = kgetc();
+    switch (c)
+    {
 
-	kprintf("\r\n===TEST END===\r\n");
-	return;
+    // TODO: Test your operating system!
+
+    default:
+	kprintf("Hello Xinu World!\r\n");
+    }
+
+
+    kprintf("\r\n===TEST END===\r\n");
+    return;
 }

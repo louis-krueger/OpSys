@@ -1,40 +1,36 @@
 /**
  * @file kprintf.c
- * @provides kputc, kgetc, kungetc, kcheckc, kprintf
- *
- * $Id: kprintf.c 175 2008-01-30 01:18:27Z brylow $
- *
- * Modified by:
- * Louis Krueger
- * and
- * Sam Scheel
  */
-/* Embedded XINU, Copyright (C) 2007.  All rights reserved. */
 
-#include <kernel.h>
-#include <stdarg.h>
-#include <device.h>
-#include <stdio.h>
-#include <uart.h>
+/* Embedded Xinu, Copyright (C) 2009, 2013.  All rights reserved. */
 
-#define UNGETMAX 10  /* Can un-get at most 10 characters. */
+#include <xinu.h>
+
+#define UNGETMAX 10             /* Can un-get at most 10 characters. */
 
 static unsigned char ungetArray[UNGETMAX];
 
 /**
- * kputc - perform a synchronous kernel write to the serial console
- * @param *pdev device pointer (unused for the synchronous driver)
- * @param c character to write
- * @return c on success, SYSERR on failure.
+ * Synchronously read a character from a UART.  This blocks until a character is
+ * available.  The interrupt handler is not used.
+ *
+ * @return
+ *      The character read from the UART as an <code>unsigned char</code> cast
+ *      to an <code>int</code>.
  */
-syscall kputc(device *pdev, unsigned char c)
+syscall kgetc(void)
 {
-	volatile struct uart_csreg *pucsr = (struct uart_csreg *)0xB8000300;
+    volatile struct pl011_uart_csreg *regptr;
+    uchar c;
 
-	// TODO: Check UART line status.
-	//       When the transmitter is empty, send character c.
+    /* Pointer to the UART control and status registers.  */
+    regptr = (struct pl011_uart_csreg *)0x20201000;
 
-	return SYSERR;
+    // TODO: First, check the unget buffer for a character.
+    //       Otherwise, check UART flags register, and
+    //       once the receiver is not empty, get character c.
+
+    return SYSERR;
 }
 
 /**
@@ -43,27 +39,12 @@ syscall kputc(device *pdev, unsigned char c)
  */
 syscall kcheckc(void)
 {
-	volatile struct uart_csreg *pucsr = (struct uart_csreg *)0xB8000300;
+    volatile struct pl011_uart_csreg *regptr;
+    regptr = (struct pl011_uart_csreg *)0x20201000;
 
-	// TODO: Check the unget buffer and the UART for characters.
+    // TODO: Check the unget buffer and the UART for characters.
 
-	return 0;  // false
-}
-
-/**
- * kgetc - perform a synchronous kernel read from the serial console,
- *         or from the local buffer if there are "ungotten" characters.
- * @return c on success, SYSERR on failure.
- */
-syscall kgetc(void)
-{
-	volatile struct uart_csreg *pucsr = (struct uart_csreg *)0xB8000300;
-
-	// TODO: First, check the unget buffer for a character.
-	//       Otherwise, check UART line status, and
-	//       when the receiver has something, get character c.
-
-	return SYSERR;
+    return SYSERR;
 }
 
 /**
@@ -73,24 +54,56 @@ syscall kgetc(void)
  */
 syscall kungetc(unsigned char c)
 {
+    // TODO: Check for room in unget buffer, put the character in or discard.
 
-	// TODO: Check for room in unget buffer, put the character in.
+    return SYSERR;
+}
 
-	return SYSERR;
+
+/**
+ * Synchronously write a character to a UART.  This blocks until the character
+ * has been written to the hardware.  The interrupt handler is not used.
+ *
+ * @param c
+ *      The character to write.
+ *
+ * @return
+ *      The character written to the UART as an <code>unsigned char</code> cast
+ *      to an <code>int</code>.
+ */
+syscall kputc(uchar c)
+{
+    volatile struct pl011_uart_csreg *regptr;
+
+    /* Pointer to the UART control and status registers.  */
+    regptr = (struct pl011_uart_csreg *)0x20201000;
+
+    // TODO: Check UART flags register.
+    //       Once the Transmitter FIFO is not full, send character c.
+
+    return SYSERR;
 }
 
 /**
- * kprintf - kernel printf: formatted, unbuffered output to CONSOLE
- * @param *fmt pointer to string being printed
- * @return OK on success
+ * kernel printf: formatted, synchronous output to SERIAL0.
+ *
+ * @param format
+ *      The format string.  Not all standard format specifiers are supported by
+ *      this implementation.  See _doprnt() for a description of supported
+ *      conversion specifications.
+ * @param ...
+ *      Arguments matching those in the format string.
+ *
+ * @return
+ *      The number of characters written.
  */
-syscall kprintf(char *fmt, ...)
+syscall kprintf(const char *format, ...)
 {
-	va_list ap;
+    int retval;
+    va_list ap;
 
-	va_start(ap, fmt);
-	_doprnt(fmt, ap, (int (*)(int, int))kputc, 0);
-	va_end(ap);
-	return OK;
+    va_start(ap, format);
+    retval = _doprnt(format, ap, (int (*)(int, int))kputc, 0);
+    va_end(ap);
+    return retval;
 }
-
