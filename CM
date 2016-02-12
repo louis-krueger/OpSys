@@ -6,13 +6,12 @@
 #  run the set of tests and generate report on differences.
 #
 error="0"
-echo "Are you sure you would like to commit and delete your branch?"
-echo "cntrl-d to escape"
+echo "Are you sure you would like to commit and delete your branch? (ctrl-d to escape)"
 read confirm
-if [ -n $confirm ]; then
+if [ -n $confirm ]&&[ $error="0" ]; then
 	echo "enter commit message:" 
 	read message
-	if [ -n "$message" ]; then
+	if [ -n "$message" ]&&[ $error="0" ]; then
 		echo "enter branch name:"
 		read branch
 		if [ -n "$branch" ]; then
@@ -29,7 +28,7 @@ if [ -n $confirm ]; then
 else
 	error="1"
 fi
-if [ error="1" ]; then
+if [ $error="1" ]; then
 	echo "You seem unsure Sire, please go get some fresh air, exiting..."
 	exit 1;
 fi
