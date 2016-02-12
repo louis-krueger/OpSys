@@ -33,7 +33,13 @@ syscall kgetc(void)
 
     // TODO: First, check the unget buffer for a character.
     //       Otherwise, check UART flags register, and
-    //       once the receiver is not empty, get character c.
+    //       once the receiver is not empty, get character c. 
+    
+    //	     If unget buffer has char
+    //	     else check UART flag register
+    //	     get char from reciever
+    //
+
 
     return SYSERR;
 }
@@ -48,6 +54,9 @@ syscall kcheckc(void)
     regptr = (struct pl011_uart_csreg *)0x20201000;
 
     // TODO: Check the unget buffer and the UART for characters.
+	
+   //check for lingering characters
+   //return syscall integer
 
     return SYSERR;
 }
@@ -61,7 +70,9 @@ syscall kungetc(unsigned char c)
 {
     // TODO: Check for room in unget buffer, put the character in or discard.
     
-	
+    //if unget buffer is not full, put character in the unget buffer else
+    //disard  the c into the abyss
+
     return SYSERR;
 }
 
@@ -80,14 +91,19 @@ syscall kungetc(unsigned char c)
 syscall kputc(uchar c)
 {
     volatile struct pl011_uart_csreg *regptr;
-
+    signed int uartflag = -1;
+		
+	
     /* Pointer to the UART control and status registers.  */
     regptr = (struct pl011_uart_csreg *)0x20201000;
-
+    regptr += UART_RF_OFFSET
+    uartflag = *regptr   
    
     // TODO: Check UART flags register.
     //       Once the Transmitter FIFO is not full, send character c.
-	 
+	do{
+		
+	}while(uartflag != -1);
    
     return SYSERR;
 }
