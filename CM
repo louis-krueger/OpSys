@@ -15,7 +15,7 @@ if [ $confirm = "y" ]&&[ $error="0" ]; then
 		echo "enter branch name:"
 		read branch
 		if [ -n "$branch" ]; then
-			gut pull
+			git pull
 			git add ./
 			git commit -m "$message"
 		else
