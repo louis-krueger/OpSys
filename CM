@@ -17,8 +17,6 @@ if [ -n $confirm ]&&[ $error="0" ]; then
 		if [ -n "$branch" ]; then
 			git add ./
 			git commit -m "$message"
-			git push origin $branch
-			git checkout master
 		else
 			error="1"
 		fi
@@ -29,7 +27,10 @@ else
 	error="1"
 fi
 if [ "$error" = "1" ]; then
-	echo "You seem unsure Sire, please go get some fresh air, exiting..."
+	echo "You seem unsure Sire, please go get some fresh air, exiting no changes have been made"
 	exit 1;
 fi
-echo "new branch ($branch) has been created"
+git push origin $branch
+echo "switching to master"
+git checkout master
+echo "your branch ($branch) has been commited to the repo"
