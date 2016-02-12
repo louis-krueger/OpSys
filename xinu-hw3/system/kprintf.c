@@ -34,6 +34,7 @@ syscall kgetc(void)
     // TODO: First, check the unget buffer for a character.
     //       Otherwise, check UART flags register, and
     //       once the receiver is not empty, get character c.
+    // 
 
     return SYSERR;
 }
@@ -48,6 +49,7 @@ syscall kcheckc(void)
     regptr = (struct pl011_uart_csreg *)0x20201000;
 
     // TODO: Check the unget buffer and the UART for characters.
+    // Comment from sam's DM
 
     return SYSERR;
 }
