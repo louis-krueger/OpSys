@@ -8,8 +8,7 @@
 #  run the set of tests and generate report on differences.
 #
 
-REMOTE_VERIFY="git remote -v" #Options for diff...
-TESTS=""
+REMOTE_VERIFY="git remote -v"
 
 echo "Git Latest"
 echo "Please enter username:"

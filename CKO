@@ -1,31 +1,21 @@
 #!/bin/bash
 # @author Louis Krueger - 01/2016
-# @author Matthew H. Netkow - 02/2009
-# @author Dennis Brylow - 01/2010
 #
 # Automated external testing script for Embedded XINU.
 # Given the a reference implementation and a second program,
 #  run the set of tests and generate report on differences.
 #
 
-REMOTE_VERIFY="git remote -v" #Options for diff...
-TESTS=""
 
 echo "Ready to work? Checking out branch"
 echo "Please enter branch name:"
 read branch
 if [ -n "$branch" ]; then
 	echo "creating branch!"
-	git checkout 
-	read pw
 else
 	echo "invalid branch name, exiting..."
 	exit 1;
 fi
-if [ -n REMOTE_VERIFY ]; then
-	git remote set-url origin https://$user:$pw@github.com/louis-krueger/Opsys.git
-else
- 	git remote add origin https://$user:$pw@github.com/louis-krueger/OpSys.git
-fi
-git pull origin master
-echo "$USER  up-to-date"
+git checkout -b $branch
+git push origin $branch
+echo "new branch ($branch) has been created"
