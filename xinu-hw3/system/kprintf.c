@@ -1,5 +1,7 @@
 /**
  * @file kprintf.c
+ * @Authors: Louis Krueger & Sam Scheel
+ *
  */
 
 /* Embedded Xinu, Copyright (C) 2009, 2013.  All rights reserved. */
