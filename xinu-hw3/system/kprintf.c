@@ -9,6 +9,9 @@
 #include <xinu.h>
 
 #define UNGETMAX 10             /* Can un-get at most 10 characters. */
+#define UART_FR_OFFEST 18
+
+
 
 static unsigned char ungetArray[UNGETMAX];
 
@@ -57,7 +60,8 @@ syscall kcheckc(void)
 syscall kungetc(unsigned char c)
 {
     // TODO: Check for room in unget buffer, put the character in or discard.
-
+    
+	
     return SYSERR;
 }
 
@@ -80,9 +84,11 @@ syscall kputc(uchar c)
     /* Pointer to the UART control and status registers.  */
     regptr = (struct pl011_uart_csreg *)0x20201000;
 
+   
     // TODO: Check UART flags register.
     //       Once the Transmitter FIFO is not full, send character c.
-
+	 
+   
     return SYSERR;
 }
 
