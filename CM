@@ -28,7 +28,7 @@ if [ -n $confirm ]&&[ $error="0" ]; then
 else
 	error="1"
 fi
-if [ $error="1" ]; then
+if [ "$error" = "1" ]; then
 	echo "You seem unsure Sire, please go get some fresh air, exiting..."
 	exit 1;
 fi
