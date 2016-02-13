@@ -1,7 +1,7 @@
 /**
  * @file kprintf.c
  * @Authors: Louis Krueger & Sam Scheel
- *
+ * TA-BOT:MAILTO louis.krueger@marquette.edu samuel.scheel@marquette.edu
  */
 
 /* Embedded Xinu, Copyright (C) 2009, 2013.  All rights reserved. */
@@ -33,19 +33,28 @@ syscall kgetc(void)
 
     // TODO: First, check the unget buffer for a character.
     //       Otherwise, check UART flags register, and
-<<<<<<< HEAD
     //       once the receiver is not empty, get character c. 
-    
+    int i = 0;
+    for (i; i < UNGETMAX; i++)
+    {
+	if (ungetArray[i] != '\0')
+	{
+		c = ungetArray[i];
+		return (int) c;
+	}
+    }
     //	     If unget buffer has char
     //	     else check UART flag register
     //	     get char from reciever
-    //
-
-=======
-    //       once the receiver is not empty, get character c.
-    // 
->>>>>>> d39e1ff6b43cd3d20555a642a7011c9788b0b73f
-
+    do
+    {
+	//TODO: if UART flag registers tell us the receiver is nto empty
+		//c = receiver data
+		return (int) c;
+    }
+    while (1);
+    //indefinitly poll I/O until inner condition is met
+    //       once the receiver is not empty, get character c. 
     return SYSERR;
 }
 
@@ -57,16 +66,19 @@ syscall kcheckc(void)
 {
     volatile struct pl011_uart_csreg *regptr;
     regptr = (struct pl011_uart_csreg *)0x20201000;
-
     // TODO: Check the unget buffer and the UART for characters.
-<<<<<<< HEAD
-	
-   //check for lingering characters
-   //return syscall integer
-=======
-    // Comment from sam's DM
->>>>>>> d39e1ff6b43cd3d20555a642a7011c9788b0b73f
+    int i = 0;
+    for (i; i  < UNGETMAX; i++)
+    {
+	if (ungetArray[i] != '\0')
+		//if we find a character, return true = 1
+		return 1;
+    }	
+    //TODO: check for lingering characters in UART
 
+    //if no characters are available return false = 0
+    return 0;
+    //return syscall integer
     return SYSERR;
 }
 
@@ -78,10 +90,17 @@ syscall kcheckc(void)
 syscall kungetc(unsigned char c)
 {
     // TODO: Check for room in unget buffer, put the character in or discard.
-    
-    //if unget buffer is not full, put character in the unget buffer else
-    //disard  the c into the abyss
-
+    int i = 0;
+    for (i; i < UNGETMAX; i++)
+    {
+	if (ungetArray[i] == '\0')
+		//if unget buffer is not full, put character in the unget buffer
+	{
+		ungetArray[i] = c;
+		return c;
+	}
+    }
+    //else discard the c into the abyss and return SYSERR
     return SYSERR;
 }
 
@@ -101,7 +120,7 @@ syscall kputc(uchar c)
 {
     volatile struct pl011_uart_csreg *regptr;
     signed int uartflag = -1;
-		
+    char *uartdata = 0x20201000;		
 	
     /* Pointer to the UART control and status registers.  */
     regptr = (struct pl011_uart_csreg *)0x20201000;
@@ -110,10 +129,15 @@ syscall kputc(uchar c)
    
     // TODO: Check UART flags register.
     //       Once the Transmitter FIFO is not full, send character c.
-	do{
-		
-	}while(uartflag != -1);
-   
+    while (1)  //Poll I/O until flags tell us FIFO is not full
+    {
+	if (uartflag != -1)
+	{
+		//TODO: if (uartflag != data set that tells when fifo is full
+		uartdata = c;
+		return (int) c;
+	}		
+    }
     return SYSERR;
 }
 
