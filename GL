@@ -27,7 +27,7 @@ if [ $user = "y" ]; then
 	shopt -s extglob
 	git checkout master
 	git fetch;
-	CLEAN_LOCAL
+	$CLEAN_LOCAL
 	git reset --hard origin/master;
 	git pull origin master
 	echo "$USER  up-to-date"
