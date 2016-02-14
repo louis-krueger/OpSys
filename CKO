@@ -8,6 +8,11 @@
 CHECKOUT_BRANCH=""
 
 echo "Ready to work?"
+CHECKOUT_BRANCH="git checkout master"
+if [ CHECKOUT_BRANCH != "Already on 'master'" ]; then
+	echo "You are not on master or have conflicting changes. Did you GL?"
+	exit 1;
+fi
 echo "Please enter branch name:"
 read branch
 if [ -n "$branch" ]; then
