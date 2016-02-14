@@ -1,6 +1,6 @@
 /**
  * @file kprintf.c
- * @Authors: Louis Krueger & Sam Scheel
+ * @Authors: Louis Krueger & Samuel Scheel
  * TA-BOT:MAILTO louis.krueger@marquette.edu samuel.scheel@marquette.edu
  */
 
@@ -25,37 +25,38 @@ static unsigned char ungetArray[UNGETMAX];
  */
 syscall kgetc(void)
 {
-    volatile struct pl011_uart_csreg *regptr;
-    uchar c;
-
-    /* Pointer to the UART control and status registers.  */
-    regptr = (struct pl011_uart_csreg *)0x20201000;
-
-    // TODO: First, check the unget buffer for a character.
-    //       Otherwise, check UART flags register, and
-    //       once the receiver is not empty, get character c. 
-    int i = 0;
-    for (i; i < UNGETMAX; i++)
-    {
-	if (ungetArray[i] != '\0')
+	volatile struct pl011_uart_csreg *regptr;
+	uchar c;
+	/* Pointer to the UART control and status registers.  */
+	regptr = (struct pl011_uart_csreg *)0x20201000;
+	signed int uartflag = regptr + UART_RF_OFFSET;
+	// TODO: First, check the unget buffer for a character.
+	//       Otherwise, check UART flags register, and
+	//       once the receiver is not empty, get character c. 
+	int i = 0;
+	for (i; i < UNGETMAX; i++)	
 	{
-		c = ungetArray[i];
-		return (int) c;
+		if (ungetArray[i] != '\0')
+		{
+			c = ungetArray[i];
+			ungetArray[i] = '\0';
+			return (int) c;
+		}
 	}
-    }
-    //	     If unget buffer has char
-    //	     else check UART flag register
-    //	     get char from reciever
-    do
-    {
-	//TODO: if UART flag registers tell us the receiver is nto empty
-		//c = receiver data
-		return (int) c;
-    }
-    while (1);
-    //indefinitly poll I/O until inner condition is met
-    //       once the receiver is not empty, get character c. 
-    return SYSERR;
+	//	     If unget buffer has char
+	//	     else check UART flag register
+	//	     get char from reciever
+	while (1) //Poll I/O until receiver is not empty
+	{
+		//If UART flag registers tell us the receiver is not empty, receive character
+		if (*uartflag != (*uartflag & 0x10))
+		{
+			c = *regptr;
+			return (int) c;
+		}
+    	}
+	//       once the receiver is not empty, get character c. 
+	return SYSERR;
 }
 
 /**
@@ -64,22 +65,24 @@ syscall kgetc(void)
  */
 syscall kcheckc(void)
 {
-    volatile struct pl011_uart_csreg *regptr;
-    regptr = (struct pl011_uart_csreg *)0x20201000;
-    // TODO: Check the unget buffer and the UART for characters.
-    int i = 0;
-    for (i; i  < UNGETMAX; i++)
-    {
-	if (ungetArray[i] != '\0')
+	volatile struct pl011_uart_csreg *regptr;
+	regptr = (struct pl011_uart_csreg *)0x20201000;
+	// TODO: Check the unget buffer and the UART for characters.
+	int i = 0;
+	for (i; i  < UNGETMAX; i++)
+	{
+		if (ungetArray[i] != '\0')
 		//if we find a character, return true = 1
+			return 1;
+	}	
+	//TODO: check for lingering characters in UART
+	if (*regptr != (*regptr & 0xF00))
 		return 1;
-    }	
-    //TODO: check for lingering characters in UART
-
-    //if no characters are available return false = 0
-    return 0;
-    //return syscall integer
-    return SYSERR;
+	else
+	//if no characters are available return false = 0
+		return 0;
+	//return syscall integer
+	return SYSERR;
 }
 
 /**
@@ -89,19 +92,19 @@ syscall kcheckc(void)
  */
 syscall kungetc(unsigned char c)
 {
-    // TODO: Check for room in unget buffer, put the character in or discard.
-    int i = 0;
-    for (i; i < UNGETMAX; i++)
-    {
-	if (ungetArray[i] == '\0')
-		//if unget buffer is not full, put character in the unget buffer
+	// TODO: Check for room in unget buffer, put the character in or discard.
+	int i = 0;
+ 	for (i; i < UNGETMAX; i++)
 	{
-		ungetArray[i] = c;
-		return c;
-	}
-    }
-    //else discard the c into the abyss and return SYSERR
-    return SYSERR;
+		if (ungetArray[i] == '\0')
+		//if unget buffer is not full, put character in the unget buffer
+		{
+			ungetArray[i] = c;
+			return c;
+		}
+    	}
+	//If buffer is full, discard c and return SYSERR
+	return SYSERR;
 }
 
 
@@ -118,27 +121,22 @@ syscall kungetc(unsigned char c)
  */
 syscall kputc(uchar c)
 {
-    volatile struct pl011_uart_csreg *regptr;
-    signed int uartflag = -1;
-    char *uartdata = 0x20201000;		
-	
-    /* Pointer to the UART control and status registers.  */
-    regptr = (struct pl011_uart_csreg *)0x20201000;
-    regptr += UART_RF_OFFSET
-    uartflag = *regptr   
-   
-    // TODO: Check UART flags register.
-    //       Once the Transmitter FIFO is not full, send character c.
-    while (1)  //Poll I/O until flags tell us FIFO is not full
-    {
-	if (uartflag != -1)
+	volatile struct pl011_uart_csreg *regptr;
+	/* Pointer to the UART control and status registers.  */
+	regptr = (struct pl011_uart_csreg *)0x20201000;
+	signed int uartflag = regptr + UART_RF_OFFSET;   
+	// TODO: Check UART flags register.
+	//       Once the Transmitter FIFO is not full, send character c.
+	while (1)  //Poll I/O until flags tell us FIFO is not full
 	{
-		//TODO: if (uartflag != data set that tells when fifo is full
-		uartdata = c;
-		return (int) c;
-	}		
-    }
-    return SYSERR;
+		if (*uartflag != (*uartflag & 0x20))
+		//If uartflag tells us the tramit FIFO is not full, send character x
+		{
+			*regptr = c;
+			return (int) c;
+		}		
+    	}
+    	return SYSERR;
 }
 
 /**
@@ -156,11 +154,11 @@ syscall kputc(uchar c)
  */
 syscall kprintf(const char *format, ...)
 {
-    int retval;
-    va_list ap;
+	int retval;
+	va_list ap;
 
-    va_start(ap, format);
-    retval = _doprnt(format, ap, (int (*)(int, int))kputc, 0);
-    va_end(ap);
-    return retval;
+	va_start(ap, format);
+	retval = _doprnt(format, ap, (int (*)(int, int))kputc, 0);
+	va_end(ap);
+	return retval;
 }
