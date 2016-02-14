@@ -1,21 +1,26 @@
 #!/bin/bash
-# @author Louis Krueger - 01/2016
+# @author Louis Krueger - 02/2016
 #
-# Automated external testing script for Embedded XINU.
-# Given the a reference implementation and a second program,
-#  run the set of tests and generate report on differences.
+#
+#
 #
 
+CHECKOUT_BRANCH=""
 
-echo "Ready to work? Checking out branch"
+echo "Ready to work?"
 echo "Please enter branch name:"
 read branch
 if [ -n "$branch" ]; then
-	echo "creating branch!"
+	CHECKOUT_BRANCH="git checkout $branch"
+	if [ "{CHECKOUT_BRANCH}" = "Switch to branch '$branch'" ]; then
+		echo "Your existing branch ($branch) has been checked out"
+		exit 0; 
+	fi
 else
 	echo "invalid branch name, exiting..."
 	exit 1;
 fi
+echo "creating branch $branch"
 git checkout -b $branch
 git push origin $branch
-echo "new branch ($branch) has been created"
+echo "new branch ($branch) has been created!"

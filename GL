@@ -25,6 +25,7 @@ echo "Are you sure you would like to clean local directory and clone master?(y/n
 read user
 if [ $user = "y" ]; then
 	shopt -s extglob
+	git checkout master
 	git fetch;
 	CLEAN_LOCAL
 	git reset --hard origin/master;

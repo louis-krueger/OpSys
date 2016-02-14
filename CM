@@ -6,7 +6,7 @@
 #  run the set of tests and generate report on differences.
 #
 error="0"
-echo "Are you sure you would like to commit and switch to master?(y/n)"
+echo "Are you sure you would like to commit and switch to local master head?(y/n)"
 read confirm
 if [ $confirm = "y" ]&&[ $error="0" ]; then
 	echo "enter commit message:" 
@@ -34,4 +34,5 @@ fi
 git push origin $branch
 echo "switching to master"
 git checkout master
-echo "your branch ($branch) has been commited to the repo, contact admin for master&branch merge"
+echo "your branch ($branch) has been commited to the repo"
+echo "contact admin for master & $branch merge"
