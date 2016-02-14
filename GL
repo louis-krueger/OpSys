@@ -16,7 +16,7 @@ else
 	echo "username is nothing, exiting..."
 	exit 1;
 fi
-if [ -n REMOTE_VERIFY ]; then
+if [ -n $REMOTE_VERIFY ]; then
 	git remote set-url origin https://$user:$pw@github.com/louis-krueger/Opsys.git
 else
  	git remote add origin https://$user:$pw@github.com/louis-krueger/OpSys.git
