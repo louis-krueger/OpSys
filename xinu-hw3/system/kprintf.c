@@ -6,12 +6,33 @@
 
 /* Embedded Xinu, Copyright (C) 2009, 2013.  All rights reserved. */
 
+
+/*	struct pl011_uart info from header
+ *	
+ *	struct pl011_uart_csreg
+ *	{
+ *		volatile unsigned int dr; 	    **< Data Register                        *///0x00
+/*		volatile unsigned int rsrecr;       **< Receive status/error clear register  *///0x04
+/*		volatile unsigned int dont_use_a;   ** spacer                                *///0x08
+/*		volatile unsigned int dont_use_b;   ** spacer                                *///0x0C	
+/*		volatile unsigned int dont_use_c;   ** spacer                                *///0x10
+/*		volatile unsigned int dont_use_d;   ** spacer                                *///0x14
+/*		volatile unsigned int fr;   	    **< Flag Register                        *///0x18
+/*		volatile unsigned int dont_use_e;   ** spacer                                *///0x1C
+/*		volatile unsigned int ilpr;         **< Not in use                           *///0x20
+/*		volatile unsigned int ibrd; 	    **< Integer baud rate divisor            *///0x24
+/*		volatile unsigned int fbrd; 	    **< Fractional baud rate divisor         *///0x28
+/*		volatile unsigned int lcrh; 	    **< Line Control Register                *///0x2C
+/*		volatile unsigned int cr;   	    **< Control Register                     *///0x30
+/*		volatile unsigned int ifls; 	    **< Interupt FIFO level select register  *///0x34
+/*    		volatile unsigned int imsc; 	    **< Interupt Mask Set Clear Register     *///0x38
+/*   		volatile unsigned int ris;  	    **< Raw Interupt Status Register         *///0x3C
+/*    		volatile unsigned int mis;  	    **< Masked Interupt Status Register      *///0x40
+/*    		volatile unsigned int icr;  	   **< Interupt Clear Register              *///0x44
+
 #include <xinu.h>
 
 #define UNGETMAX 10             /* Can un-get at most 10 characters. */
-#define UART_FR_OFFEST 18
-
-
 
 static unsigned char ungetArray[UNGETMAX];
 
@@ -25,16 +46,16 @@ static unsigned char ungetArray[UNGETMAX];
  */
 syscall kgetc(void)
 {
-	volatile struct pl011_uart_csreg *regptr;
 	uchar c;
-	/* Pointer to the UART control and status registers.  */
-	regptr = (struct pl011_uart_csreg *)0x20201000;
-	signed int uartflag = regptr + UART_RF_OFFSET;
+	volatile struct pl011_uart_csreg *regptr = (struct pl011_uart_csreg *)0x20201000;    /*points to pl011 uart struct*/
+	sint uartflag = (*regptr).fr;   /*store uart flag register in sint 'uartflag' */
+	
+
 	// TODO: First, check the unget buffer for a character.
 	//       Otherwise, check UART flags register, and
 	//       once the receiver is not empty, get character c. 
 	int i = 0;
-	for (i; i < UNGETMAX; i++)	
+	for (i=0; i < UNGETMAX; i++)	
 	{
 		if (ungetArray[i] != '\0')
 		{
@@ -49,7 +70,7 @@ syscall kgetc(void)
 	while (1) //Poll I/O until receiver is not empty
 	{
 		//If UART flag registers tell us the receiver is not empty, receive character
-		if (*uartflag != (*uartflag & 0x10))
+		if ()
 		{
 			c = *regptr;
 			return (int) c;
