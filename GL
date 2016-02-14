@@ -16,7 +16,7 @@ else
 	echo "username is nothing, exiting..."
 	exit 1;
 fi
-if [ -n $REMOTE_VERIFY ]; then
+if [ $REMOTE_VERIFY == origin* ]; then
 	git remote set-url origin https://$user:$pw@github.com/louis-krueger/Opsys.git
 else
  	git remote add origin https://$user:$pw@github.com/louis-krueger/OpSys.git
@@ -32,5 +32,5 @@ if [ $user = "y" ]; then
 	git pull origin master
 	echo "$USER  up-to-date"
 else
-	echo "TNLN, CFTC"
+	echo "TNLN, TFTC"
 fi
