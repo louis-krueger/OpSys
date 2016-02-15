@@ -23,14 +23,18 @@ devcall putc(int dev, char c) { return 0; }
  */
 void testcases(void)
 {
-  //  int c;
+    int c;
     int i;
     kprintf("===TEST BEGIN===\r\n");
 
     for (i = 32;i < 128; i++)
 	kprintf("%c", i);
-/*    c = kgetc();
-    switch (c)
+    kprintf("\r\n==========\r\n");
+    while((c = kgetc()) != EOF)
+    {
+        kprintf("%c", c);
+    }
+/*    switch (c)
     {
 	case 
 		break;
