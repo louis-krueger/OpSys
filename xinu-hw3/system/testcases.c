@@ -8,6 +8,8 @@
  * Louis Krueger
  * and
  * Sam Scheel
+ * TA-BOT:MAILTO louis.krueger@marquette.edu samuel.scheel@marquette.edu
+ *
  */
 /* Embedded XINU, Copyright (C) 2007.  All rights reserved. */
 
@@ -21,20 +23,23 @@ devcall putc(int dev, char c) { return 0; }
  */
 void testcases(void)
 {
-    int c;
-
+  //  int c;
+    int i;
     kprintf("===TEST BEGIN===\r\n");
 
-    c = kgetc();
+    for (i = 32;i < 128; i++)
+	kprintf("%c", i);
+/*    c = kgetc();
     switch (c)
     {
-
+	case 
+		break;
     // TODO: Test your operating system!
 
     default:
 	kprintf("Hello Xinu World!\r\n");
     }
-
+*/
 
     kprintf("\r\n===TEST END===\r\n");
     return;
