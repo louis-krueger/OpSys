@@ -23,28 +23,29 @@ devcall putc(int dev, char c) { return 0; }
  */
 void testcases(void)
 {
-    int c;
-    int i;
-    kprintf("===TEST BEGIN===\r\n");
+	int c;
+	int i;
+	char teststring[] = "Hello Wo
 
-    for (i = 32;i < 128; i++)
-	kprintf("%c", i);
-    kprintf("\r\n==========\r\n");
-    while((c = kgetc()) != EOF)
-    {
-        kprintf("%c", c);
-    }
-/*    switch (c)
-    {
-	case 
-		break;
-    // TODO: Test your operating system!
+	kprintf("===TEST BEGIN===\r\n");
+    	
+	kprintf("%d", kcheckc());
+    	
+	for (i = 32;i < 128; i++)
+		kprintf("%c", i);
+    	kprintf("\r\n==========\r\n");
+    	
+	
 
-    default:
+	/*    switch (c)
+    	{
+		case 
+			break;
+	    // TODO: Test your operating system!
+		default:
 	kprintf("Hello Xinu World!\r\n");
-    }
-*/
-
-    kprintf("\r\n===TEST END===\r\n");
-    return;
+    	}
+	*/
+    	kprintf("\r\n===TEST END===\r\n");
+    	return;
 }

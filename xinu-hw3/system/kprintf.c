@@ -36,8 +36,6 @@
 #define UARTADDRESS	0x20201000	/* Base address of UART Hardware registers */
 #define RECEMPTYFLAG	0x10		/* Bit pattern for when the Receive FIFO is empty */
 #define TRAFULLFLAG	0x20		/* Bit pattern for when the Transmit FIFO is full */
-#define ERRLOWBND	0x100		/* Bit pattern for lower bound of possible errors in data register */
-#define ERRUPPBND	0xF00		/* Bit pattern for upper bound of possible errors in data register */
 
 static unsigned char ungetArray[UNGETMAX] = "\0\0\0\0\0\0\0\0\0\0";
 
@@ -99,7 +97,7 @@ syscall kcheckc(void)
 			return 1;
 	}	
 	//TODO: check for lingering characters in UART
-	if ((((*regptr).dr & ERRUPPBND) < ERRLOWBND) || (((*regptr).dr & ERRUPPBND) >  ERRUPPBND))
+	if ((((*regptr).fr & RECEMPTYFLAG) != RECEMPTYFLAG))
 		return 1;
 	else
 	//if no characters are available return false = 0
