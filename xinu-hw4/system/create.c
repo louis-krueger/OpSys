@@ -89,8 +89,6 @@ syscall create(void *funcaddr, ulong ssize, char *name, ulong nargs, ...)
 
     numproc++;
     ppcb = &proctab[pid];
-    /* setup PCB entry for new proc */
-    ppcb->state = PRSUSP;
  
 #ifdef DEBUG
 	kprintf("\n\n***DEBUG INFO START (create.c) before pcb setup***\n\r");
@@ -110,6 +108,10 @@ syscall create(void *funcaddr, ulong ssize, char *name, ulong nargs, ...)
    
     // TODO: Setup PCB entry for new process.
 	//1.PCB state set has been provided in the line above
+    
+		/* setup PCB entry for new proc */
+   	 ppcb->state = PRSUSP;
+
 	//2.need to set new proc pointer to the run time stack
 	//3.need to set stklen 
 	//4.need to set process name
