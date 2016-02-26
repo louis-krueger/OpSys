@@ -113,9 +113,24 @@ syscall create(void *funcaddr, ulong ssize, char *name, ulong nargs, ...)
    	 ppcb->state = PRSUSP;
 
 	//2.need to set new proc pointer to the run time stack
+		
+		/*stack base pointer NOTE:&saddr? Might be the other stack i didn't check  print will tell */
+	ppcb->stkbase = saddr;
+			
 	//3.need to set stklen 
+		
+		/*set stack size to ssize */		
+	ppcb->stklen = ssize; 
+	
 	//4.need to set process name
+	
+		/*NOTE:need to get full name from attribs */
+	ppcb->name = name;
+	
 	//5.need to store process registers
+	
+		/*rough sketch*/
+	ppcb->*regs =  funcaddr;
 
 //This is the definition of the pcb, this comment is also at the top.
 	
