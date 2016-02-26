@@ -17,25 +17,25 @@ extern void ctxsw(void *, void *);
  */
 syscall resched(void)
 {
-	pcb *oldproc;   /* pointer to old process entry */
-	pcb *newproc;   /* pointer to new process entry */
+    pcb *oldproc;               /* pointer to old process entry */
+    pcb *newproc;               /* pointer to new process entry */
 
-	oldproc = &proctab[ currpid ];
+    oldproc = &proctab[currpid];
 
-	/* place current process at end of ready queue */
-	if (PRCURR == oldproc->state) 
-	{
-		oldproc->state = PRREADY;
-		enqueue(currpid, readylist);
-	}
+    /* place current process at end of ready queue */
+    if (PRCURR == oldproc->state)
+    {
+        oldproc->state = PRREADY;
+        enqueue(currpid, readylist);
+    }
 
-	/* remove first process in ready queue */
-	currpid = dequeue(readylist);
-	newproc = &proctab[ currpid ];
-	newproc->state = PRCURR;	/* mark it currently running	*/
+    /* remove first process in ready queue */
+    currpid = dequeue(readylist);
+    newproc = &proctab[currpid];
+    newproc->state = PRCURR;    /* mark it currently running    */
 
-	ctxsw(&oldproc->regs, &newproc->regs);
+    ctxsw(&oldproc->regs, &newproc->regs);
 
-	/* The OLD process returns here when resumed. */
-	return OK;
+    /* The OLD process returns here when resumed. */
+    return OK;
 }

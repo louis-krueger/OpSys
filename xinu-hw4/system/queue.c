@@ -8,8 +8,8 @@
 
 #include <xinu.h>
 
-struct  qentry queuetab[NQENT]; /**< global queue table                   */
-static  int nextqueue = NPROC;  /**< queuetab[0..NPROC-1] are processes   */
+struct qentry queuetab[NQENT];  /**< global queue table                   */
+static int nextqueue = NPROC;   /**< queuetab[0..NPROC-1] are processes   */
 
 /**
  * Insert a process at the tail of a queue
@@ -19,18 +19,20 @@ static  int nextqueue = NPROC;  /**< queuetab[0..NPROC-1] are processes   */
  */
 pid_typ enqueue(pid_typ pid, qid_typ q)
 {
-	int tail;
+    int tail;
 
-	if (isbadqueue(q) || isbadpid(pid))
-	{ return SYSERR; }
+    if (isbadqueue(q) || isbadpid(pid))
+    {
+        return SYSERR;
+    }
 
-	tail = queuetail(q);
+    tail = queuetail(q);
 
-	queuetab[pid].next = tail;
-	queuetab[pid].prev = queuetab[tail].prev;
-	queuetab[queuetab[tail].prev].next = pid;
-	queuetab[tail].prev = pid;
-	return pid;
+    queuetab[pid].next = tail;
+    queuetab[pid].prev = queuetab[tail].prev;
+    queuetab[queuetab[tail].prev].next = pid;
+    queuetab[tail].prev = pid;
+    return pid;
 }
 
 
@@ -41,11 +43,14 @@ pid_typ enqueue(pid_typ pid, qid_typ q)
  */
 pid_typ remove(pid_typ pid)
 {
-	if (isbadpid(pid)) { return SYSERR; }
+    if (isbadpid(pid))
+    {
+        return SYSERR;
+    }
 
-	queuetab[queuetab[pid].prev].next = queuetab[pid].next;
-	queuetab[queuetab[pid].next].prev = queuetab[pid].prev;
-	return pid;
+    queuetab[queuetab[pid].prev].next = queuetab[pid].next;
+    queuetab[queuetab[pid].next].prev = queuetab[pid].prev;
+    return pid;
 }
 
 /**
@@ -55,20 +60,25 @@ pid_typ remove(pid_typ pid)
  */
 pid_typ dequeue(qid_typ q)
 {
-	int head = queuehead(q);
-	pid_typ pid;                    /* first process on the list    */
+    int head = queuehead(q);
+    pid_typ pid;                /* first process on the list    */
 
-	if (isbadqueue(q)) { return SYSERR; }
+    if (isbadqueue(q))
+    {
+        return SYSERR;
+    }
 
-	if ((pid = queuetab[head].next) < NPROC)
-	{ 
-		remove(pid);
-		queuetab[pid].prev = pid;
-		queuetab[pid].next = pid;
-		return pid; 
-	}
-	else
-	{ return EMPTY; }
+    if ((pid = queuetab[head].next) < NPROC)
+    {
+        remove(pid);
+        queuetab[pid].prev = pid;
+        queuetab[pid].next = pid;
+        return pid;
+    }
+    else
+    {
+        return EMPTY;
+    }
 }
 
 /**
@@ -77,13 +87,13 @@ pid_typ dequeue(qid_typ q)
  */
 qid_typ newqueue(void)
 {
-	int head, tail;
+    int head, tail;
 
-	head = nextqueue++;
-	tail = nextqueue++;
-	queuetab[head].next = tail;
-	queuetab[head].prev = EMPTY;
-	queuetab[tail].next = EMPTY;
-	queuetab[tail].prev = head;
-	return (qid_typ) ((head << 16) | (tail & 0xFFFF));
+    head = nextqueue++;
+    tail = nextqueue++;
+    queuetab[head].next = tail;
+    queuetab[head].prev = EMPTY;
+    queuetab[tail].next = EMPTY;
+    queuetab[tail].prev = head;
+    return (qid_typ) ((head << 16) | (tail & 0xFFFF));
 }

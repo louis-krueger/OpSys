@@ -9,14 +9,14 @@
 #include <xinu.h>
 
 /* Function prototypes */
-static int sysinit(void);        /* intializes system structures   */
-static void print_os_info(void); /* Print initial O/S data         */
-extern void testcases(void);     /* Testing hook                   */
-extern void main(void);          /* Main program                   */
+static int sysinit(void);       /* intializes system structures   */
+static void print_os_info(void);        /* Print initial O/S data         */
+extern void testcases(void);    /* Testing hook                   */
+extern void main(void);         /* Main program                   */
 
 /* Declarations of major kernel variables */
-pcb         proctab[NPROC];     /* Process table                         */
-qid_typ     readylist;          /* List of READY processes               */
+pcb proctab[NPROC];             /* Process table                         */
+qid_typ readylist;              /* List of READY processes               */
 
 /* Active system status */
 int numproc;                    /* Number of live user processes         */
@@ -57,8 +57,8 @@ void nulluser(void)
     /* null process has nothing else to do but cannot exit  */
     while (1)
     {
-	if(nonempty(readylist))
-	resched();
+        if (nonempty(readylist))
+            resched();
     }
 
 }
@@ -108,27 +108,29 @@ static void print_os_info(void)
  */
 static int sysinit(void)
 {
-	int     i = 0;
-	pcb     *ppcb = NULL;               /* process control block pointer */
+    int i = 0;
+    pcb *ppcb = NULL;           /* process control block pointer */
 
-	/* Initialize system variables */
-	/* Count this NULLPROC as the first process in the system. */
-	numproc   = 1;
+    /* Initialize system variables */
+    /* Count this NULLPROC as the first process in the system. */
+    numproc = 1;
 
-	/* Initialize process table */
-	for (i = 0; i < NPROC; i++)
-		{ proctab[i].state = PRFREE; }
+    /* Initialize process table */
+    for (i = 0; i < NPROC; i++)
+    {
+        proctab[i].state = PRFREE;
+    }
 
-	/* initialize null process entry */
-	ppcb = &proctab[NULLPROC];
-	ppcb->state        = PRCURR;
-	strncpy(ppcb->name, "prnull", 7);
-	ppcb->stkbase      = (void *)&_end;
-	ppcb->regs[PREG_SP]= NULL;
-	ppcb->stklen       = (ulong)memheap - (ulong)&_end;
-	currpid            = NULLPROC;
+    /* initialize null process entry */
+    ppcb = &proctab[NULLPROC];
+    ppcb->state = PRCURR;
+    strncpy(ppcb->name, "prnull", 7);
+    ppcb->stkbase = (void *)&_end;
+    ppcb->regs[PREG_SP] = NULL;
+    ppcb->stklen = (ulong)memheap - (ulong)&_end;
+    currpid = NULLPROC;
 
-	readylist = newqueue();
+    readylist = newqueue();
 
 
     return OK;

@@ -16,15 +16,18 @@
  */
 syscall ready(pid_typ pid, bool resch)
 {
-	register pcb *ppcb;
+    register pcb *ppcb;
 
-	ASSERT(!isbadpid(pid));
+    ASSERT(!isbadpid(pid));
 
-	ppcb = &proctab[pid];
-	ppcb->state = PRREADY;
+    ppcb = &proctab[pid];
+    ppcb->state = PRREADY;
 
-	enqueue(pid, readylist);
+    enqueue(pid, readylist);
 
-	if (resch) { resched(); }
-	return OK;
+    if (resch)
+    {
+        resched();
+    }
+    return OK;
 }

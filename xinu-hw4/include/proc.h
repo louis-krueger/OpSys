@@ -11,7 +11,7 @@
 
 /* process table declarations and defined constants                      */
 
-#ifndef NPROC                 /*   if number of processes is not set,    */
+#ifndef NPROC                   /*   if number of processes is not set,    */
 #define NPROC       50        /**< set the number of processes           */
 #endif
 
@@ -43,11 +43,11 @@
 
 typedef struct pentry
 {
-	int     state;          /**< process state: PRCURR, etc.             */
-	void    *stkbase;       /**< base of run time stack                  */
-	int     stklen;         /**< stack length                            */
-	char    name[PNMLEN];   /**< process name                            */
-	int     regs[PREGS];    /**< stored process registers                */
+    int state;                  /**< process state: PRCURR, etc.             */
+    void *stkbase;              /**< base of run time stack                  */
+    int stklen;                 /**< stack length                            */
+    char name[PNMLEN];          /**< process name                            */
+    int regs[PREGS];            /**< stored process registers                */
 } pcb;
 
 /* process initialization constants */
@@ -61,4 +61,4 @@ extern struct pentry proctab[];
 extern int numproc;         /**< currently active processes              */
 extern int currpid;         /**< currently executing process             */
 
-#endif /* _PROC_H_ */
+#endif                          /* _PROC_H_ */

@@ -316,8 +316,6 @@ confclean:
 
 realclean: clean confclean $(PLATCLEAN)
 	@echo -e "\tCleaning EVERYTHING"
-	rm -f ../include/conf.h
-	rm -f ../system/conf.c
 	rm -f vn version $(TOPDIR)/include/version.h
 	rm -f Makefile.bak
 

@@ -18,22 +18,26 @@ extern void *end;
  */
 void *getstk(ulong nbytes)
 {
-  /* NOTE: This is a completely broken implementation of getstk(),      */
-  /*  intended only for introductory assignments before implementing    */
-  /*  proper dynamic heap allocation.                                   */
+    /* NOTE: This is a completely broken implementation of getstk(),      */
+    /*  intended only for introductory assignments before implementing    */
+    /*  proper dynamic heap allocation.                                   */
 
-	ulong newstk;
+    ulong newstk;
 
-	if (nbytes == 0) 
-	{ return( (void *)SYSERR ); }
-  
-	nbytes = (nbytes + 15) & ~0x0F;
+    if (nbytes == 0)
+    {
+        return ((void *)SYSERR);
+    }
 
-	if ((long)platform.maxaddr - nbytes < (int)&_end)
-	{ return( (void *)SYSERR ); }
+    nbytes = (nbytes + 15) & ~0x0F;
 
-	newstk = ((ulong)platform.maxaddr - 4) & 0xFFFFFFF0;
-	platform.maxaddr = (char *)(((int)platform.maxaddr) - nbytes);
+    if ((long)platform.maxaddr - nbytes < (int)&_end)
+    {
+        return ((void *)SYSERR);
+    }
 
-	return ((void *)newstk);
+    newstk = ((ulong)platform.maxaddr - 4) & 0xFFFFFFF0;
+    platform.maxaddr = (char *)(((int)platform.maxaddr) - nbytes);
+
+    return ((void *)newstk);
 }

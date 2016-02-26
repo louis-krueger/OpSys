@@ -23,12 +23,12 @@
 * Process Control Block register constants.
 * These are the indices of registers stored in a PCB.
 */
- 
-#define PREG_R0     0   /* Argument/return/scratch registers             */
+
+#define PREG_R0     0           /* Argument/return/scratch registers             */
 #define PREG_R1     1
-#define PREG_R2     2   /* Argument/scratch registers                    */
+#define PREG_R2     2           /* Argument/scratch registers                    */
 #define PREG_R3     3
-#define PREG_R4     4   /* Callee-save regs                              */ 
+#define PREG_R4     4           /* Callee-save regs                              */
 #define PREG_R5     5
 #define PREG_R6     6
 #define PREG_R7     7
@@ -36,12 +36,12 @@
 #define PREG_R9     9
 #define PREG_R10    10
 #define PREG_R11    11
-#define PREG_IP     12  /* Intra-procedural scratch register             */
-#define PREG_SP     13  /* Stack pointer                                 */ 
-#define PREG_LR     14  /* Link register                                 */
-#define PREG_PC     15  /* Program counter                               */  
- 
-#define PREGS       16  /* Regs stored by context switches               */
+#define PREG_IP     12          /* Intra-procedural scratch register             */
+#define PREG_SP     13          /* Stack pointer                                 */
+#define PREG_LR     14          /* Link register                                 */
+#define PREG_PC     15          /* Program counter                               */
+
+#define PREGS       16          /* Regs stored by context switches               */
 
 
 #endif                          /* _ARM_H_ */

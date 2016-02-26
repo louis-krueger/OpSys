@@ -23,9 +23,9 @@ syscall kungetc(uchar);
 syscall kgetc(void);
 syscall kcheckc(void);
 
-syscall	create(void *, ulong, char *, ulong, ...);
+syscall create(void *, ulong, char *, ulong, ...);
 syscall kill(pid_typ);
-syscall ready(pid_typ, bool); 
+syscall ready(pid_typ, bool);
 syscall resched(void);
 
 /* Assertions */

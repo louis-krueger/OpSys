@@ -35,12 +35,12 @@ typedef unsigned long qid_typ;
 
 struct qentry
 {                       /**< one for each process plus two for each list */
-	pid_typ next;   /**< index of next process or tail               */
-	pid_typ prev;   /**< index of previous process or head           */
+    pid_typ next;       /**< index of next process or tail               */
+    pid_typ prev;       /**< index of previous process or head           */
 };
 
 extern struct qentry queuetab[];
-extern qid_typ       readylist;
+extern qid_typ readylist;
 
 /* inline list manipulation procedures                                   */
 
@@ -63,4 +63,4 @@ pid_typ dequeue(qid_typ);
 qid_typ newqueue(void);
 qid_typ prioritize(pid_typ pid, qid_typ q, ulong key);
 
-#endif /* _QUEUE_H_ */
+#endif                          /* _QUEUE_H_ */
