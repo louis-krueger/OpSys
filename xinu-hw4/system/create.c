@@ -12,6 +12,48 @@ static pid_typ newpid(void);
 void userret(void);
 void *getstk(ulong);
 
+/*
+ *
+ *	typedef struct pentry
+ *	{	
+ *    		int state;                  **< process state: PRCURR, etc.             *
+ *    		void *stkbase;              **< base of run time stack                  *
+ *    		int stklen;                 **< stack length                            *
+ *    		char name[PNMLEN];          **< process name                            *
+ *    		int regs[PREGS];            **< stored process registers                *
+ *	} pcb;
+ *
+ *
+ *	Definition of pcb from proc.h header file from include\
+ *
+ *
+ *
+ *	***DEFINITION OF SOME IMPORTANT THINGS***
+ *
+ * unusual value marks the top of the process stack                      *
+ *#define STACKMAGIC 0x0A0AAA99
+ *
+ * process state constants                                               *
+ *
+ *#define PRFREE      0       **< process slot is free                    *
+ *#define PRCURR      1       **< process is currently running            *
+ *#define PRSUSP      2       **< process is suspended                    *
+ *#define PRREADY     3       **< process is on ready queue               *
+ *
+ * miscellaneous process definitions                                     *
+ *
+ *#define PNMLEN      16      **< length of process "name"                *
+ *
+ * the null process is always eligible to run                            *
+ *#define NULLPROC    0       **< id of the null process                  *
+ *#define BADPID     (-1)     **< used when invalid pid needed            *
+ *
+ */
+
+
+
+
+
 /**
  * Create a new process to start running a function.
  * @param funcaddr address of function that will begin in new process
@@ -20,6 +62,9 @@ void *getstk(ulong);
  * @param nargs    number of arguments that follow
  * @return the new process id
  */
+
+#define DEBUG    /** comment out definition to stop printing debug info  **/
+
 syscall create(void *funcaddr, ulong ssize, char *name, ulong nargs, ...)
 {
     ulong *saddr;               /* stack address                */
@@ -46,8 +91,34 @@ syscall create(void *funcaddr, ulong ssize, char *name, ulong nargs, ...)
     ppcb = &proctab[pid];
     /* setup PCB entry for new proc */
     ppcb->state = PRSUSP;
+ 
+#ifdef DEBUG
+	kprintf("\n\n***DEBUG INFO START (create.c) before pcb setup***\n\r");
+	kprintf("proc state:%d\n\r", ppcb->state);    //ppcb->state same thing as (*ppcb).state
+	kprintf("stack base address:%08X\n\r", ppcb->stkbase);
+	kprintf("stack length:%08X\n\r", ppcb->stklen);
+	kprintf("process name:%s\n\r", ppcb->name);
+	kprintf("***DEBUG INFO END***\n\n\r");
+#endif
 
+
+   
     // TODO: Setup PCB entry for new process.
+	//1.PCB state set has been provided in the line above
+	//2.need to set new proc pointer to the run time stack
+	//3.need to set stklen 
+	//4.need to set process name
+	//5.need to store process registers
+
+//This is the definition of the pcb, this comment is also at the top.
+	
+/*
+ *    		int state;                  **< process state: PRCURR, etc.             *
+ *    		void *stkbase;              **< base of run time stack                  *
+ *    		int stklen;                 **< stack length                            *
+ *    		char name[PNMLEN];          **< process name                            *
+ *    		int regs[PREGS];            **< stored process registers                *
+ */
 
     /* Initialize stack with accounting block. */
     *saddr = STACKMAGIC;
