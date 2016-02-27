@@ -162,28 +162,51 @@ syscall create(void *funcaddr, ulong ssize, char *name, ulong nargs, ...)
     /*  transfer size.  Reserve space for extra args                     */
 #ifdef DEBUG 
 	if(DEBUG > 2)
-		kprintf("pads value: [0x%08X] - %d", pads, pads); 
+		kprintf("pads value: [0x%08X] - %d\n\r", pads, pads); 
+		kprintf("nargs value: [0x%08X] - %d\n\n\r", nargs, nargs);
 #endif    
 
 
     for (i = 0; i < pads; i++)
     {
         *--saddr = 0;
+    
     }
+    
     // TODO: Initialize process context.
-    proctab[pid] = ppcb; 
+    va_start(ap, nargs);
+    for (i = 0; i < nargs; i++)
+    {
+	kprintf("added arg to stack!\n\r");
+        *++saddr = va_arg(ap,int);
+    }
+    va_end(ap);
+
+#ifdef DEBUG
+	if(DEBUG > 0)
+    {
+	int k = 0;
+	do
+	{
+		kprintf("[0x%08X] value(*| ):  %lo (%lo)\n\r", saddr, *saddr, saddr);	
+		k++;
+	}while(saddr++ && (k < 8));	
+    }
+
+#endif
+     
     
     // TODO:  Place arguments into activation record.
     //        See K&R 7.3 for example using va_start, va_arg and
     //        va_end macros for variable argument functions.
-    va_start(ap, nargs);
+/*    va_start(ap, nargs);
 	for(i = 0; i < nargs; i++){
 		*saddr = *ap;
 		saddr++;
 		ap++;		
 	}	
     va_end(ap);
-		
+*/		
 
 
     return pid;

@@ -51,7 +51,7 @@ void printpcb(int pid)
     ppcb = &proctab[pid];
 
     /* Printing PCB */
-    kprintf("Process name		  : %s \r\n", ppcb->name);
+    kprintf("\nProcess name		  : %s \r\n", ppcb->name);
 
     switch (ppcb->state)
     {
