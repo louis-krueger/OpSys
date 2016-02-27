@@ -26,8 +26,11 @@
  * @return special case -- see above
  */
 ctxsw:
-
+	/* r0 = Pointer to old process registers */
+	/* r1 = Pointer to new process registers */
 // TODO: Save callee-save ("non-volatile") registers.
+	mov	r3, r0		/* Save pointer to old process registers in r3 */
+	
 // TODO: Restore callee-save ("non-volatile") registers.
 // TODO: Jump to next function.
  

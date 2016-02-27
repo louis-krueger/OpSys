@@ -174,11 +174,15 @@ syscall create(void *funcaddr, ulong ssize, char *name, ulong nargs, ...)
     }
     
     // TODO: Initialize process context.
+    proctab[pid] = *ppcb;
+    // TODO:  Place arguments into activation record.
+    //        See K&R 7.3 for example using va_start, va_arg and
+    //        va_end macros for variable argument functions.
     va_start(ap, nargs);
     for (i = 0; i < nargs; i++)
     {
 	kprintf("added arg to stack!\n\r");
-        *++saddr = va_arg(ap,int);
+        *++saddr = va_arg(ap, void);
     }
     va_end(ap);
 
@@ -195,20 +199,6 @@ syscall create(void *funcaddr, ulong ssize, char *name, ulong nargs, ...)
 
 #endif
      
-    
-    // TODO:  Place arguments into activation record.
-    //        See K&R 7.3 for example using va_start, va_arg and
-    //        va_end macros for variable argument functions.
-/*    va_start(ap, nargs);
-	for(i = 0; i < nargs; i++){
-		*saddr = *ap;
-		saddr++;
-		ap++;		
-	}	
-    va_end(ap);
-*/		
-
-
     return pid;
 }
 
