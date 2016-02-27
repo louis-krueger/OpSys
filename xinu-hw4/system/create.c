@@ -63,7 +63,7 @@ void *getstk(ulong);
  * @return the new process id
  */
 
-#define DEBUG 2    /** comment out definition to stop printing debug info  **/
+#define DEBUG 3    /** comment out definition to stop printing debug info  **/
 
 syscall create(void *funcaddr, ulong ssize, char *name, ulong nargs, ...)
 {
@@ -100,37 +100,27 @@ syscall create(void *funcaddr, ulong ssize, char *name, ulong nargs, ...)
 		kprintf("proc state:%d\n\r", ppcb->state);    //ppcb->state same thing as (*ppcb).state
 		kprintf("stack base address:0x%08X\n\r", ppcb->stkbase);
 		kprintf("stack length:0x%08X\n\r", ppcb->stklen);
-		kprintf("***DEBUG INFO END***\n\n\r");
 	}
+		kprintf("***DEBUG INFO END***\n\n\r");
 #endif
 
 
    
     // TODO: Setup PCB entry for new process.
-	//1.PCB state set has been provided in the line above
-    
-		/* setup PCB entry for new proc */
-   	 ppcb->state = PRSUSP;
+	//1.PCB state set has been provided in the line below 
+   	ppcb->state = PRSUSP;
 
 	//2.need to set new proc pointer to the run time stack
-		
-		/*stack base pointer NOTE:&saddr? Might be the other stack i didn't check  print will tell */
-	ppcb->stkbase = saddr;
-			
+	ppcb->stkbase = funcaddr;
+	
 	//3.need to set stklen 
-		
-		/*set stack size to ssize */		
 	ppcb->stklen = ssize; 
 	
 	//4.need to set process name
+	strncpy(ppcb->name, &name[0], PNMLEN);
 	
-		/*NOTE:need to get full name from attribs */
-	ppcb->name = name;
-	
-	//5.need to store process registers
-	
-		/*rough sketch*/
-	ppcb->*regs =  funcaddr;
+	//5.need to store process stack
+	memcpy(ppcb->regs, &saddr[0], PREGS);
 
 //This is the definition of the pcb, this comment is also at the top.
 	
@@ -152,8 +142,8 @@ syscall create(void *funcaddr, ulong ssize, char *name, ulong nargs, ...)
 		kprintf("proc state:%d\n\r", ppcb->state);    //ppcb->state same thing as (*ppcb).state
 		kprintf("stack base address:0x%08X\n\r", ppcb->stkbase);
 		kprintf("stack length:0x%08X\n\r", ppcb->stklen);
-		kprintf("***DEBUG INFO END***\n\n\r");
 	}
+	kprintf("***DEBUG INFO END***\n\n\r");
 #endif
 
 
@@ -170,16 +160,31 @@ syscall create(void *funcaddr, ulong ssize, char *name, ulong nargs, ...)
     }
     /* If more than 4 args, pad record size to multiple of native memory */
     /*  transfer size.  Reserve space for extra args                     */
+#ifdef DEBUG 
+	if(DEBUG > 2)
+		kprintf("pads value: [0x%08X] - %d", pads, pads); 
+#endif    
+
+
     for (i = 0; i < pads; i++)
     {
         *--saddr = 0;
     }
-
     // TODO: Initialize process context.
-    //
+    proctab[pid] = ppcb; 
+    
     // TODO:  Place arguments into activation record.
     //        See K&R 7.3 for example using va_start, va_arg and
     //        va_end macros for variable argument functions.
+    va_start(ap, nargs);
+	for(i = 0; i < nargs; i++){
+		*saddr = *ap;
+		saddr++;
+		ap++;		
+	}	
+    va_end(ap);
+		
+
 
     return pid;
 }
