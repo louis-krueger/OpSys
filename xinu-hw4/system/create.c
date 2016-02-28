@@ -80,7 +80,14 @@ syscall create(void *funcaddr, ulong ssize, char *name, ulong nargs, ...)
     ssize = (ulong)(ssize + 3) & 0xFFFFFFFC;
     /* round up to even boundary    */
     saddr = (ulong *)getstk(ssize);     /* allocate new stack and pid   */
-    pid = newpid();
+#ifdef DEBUG
+	if (DEBUG > 1)
+	{
+		kprintf("saddr address - [0x%08X]\n\r", saddr);
+	}
+#endif
+    
+     pid = newpid();
     /* a little error checking      */
     if ((((ulong *)SYSERR) == saddr) || (SYSERR == pid))
     {
@@ -106,7 +113,7 @@ syscall create(void *funcaddr, ulong ssize, char *name, ulong nargs, ...)
 
 
    
-    // TODO: Setup PCB entry for new process.
+   	// TODO: Setup PCB entry for new process.
 	//1.PCB state set has been provided in the line below 
    	ppcb->state = PRSUSP;
 
@@ -162,6 +169,7 @@ syscall create(void *funcaddr, ulong ssize, char *name, ulong nargs, ...)
     /*  transfer size.  Reserve space for extra args                     */
 #ifdef DEBUG 
 	if(DEBUG > 2)
+		kprintf("size of ppcb: (0x%08X) - %lo\n\r", sizeof(*ppcb), sizeof(*ppcb));
 		kprintf("pads value: [0x%08X] - %d\n\r", pads, pads); 
 		kprintf("nargs value: [0x%08X] - %d\n\n\r", nargs, nargs);
 #endif    
@@ -170,7 +178,7 @@ syscall create(void *funcaddr, ulong ssize, char *name, ulong nargs, ...)
     for (i = 0; i < pads; i++)
     {
         *--saddr = 0;
-    
+   	kprintf("PADDING**\n\r"); 
     }
     
     // TODO: Initialize process context.
@@ -182,7 +190,7 @@ syscall create(void *funcaddr, ulong ssize, char *name, ulong nargs, ...)
     for (i = 0; i < nargs; i++)
     {
 	kprintf("added arg to stack!\n\r");
-        *++saddr = va_arg(ap, void);
+        *--saddr = va_arg(ap, ulong);
     }
     va_end(ap);
 
@@ -190,11 +198,13 @@ syscall create(void *funcaddr, ulong ssize, char *name, ulong nargs, ...)
 	if(DEBUG > 0)
     {
 	int k = 0;
+	ulong *magicStack = saddr;
 	do
 	{
-		kprintf("[0x%08X] value(*| ):  %lo (%lo)\n\r", saddr, *saddr, saddr);	
+		kprintf("[0x%08X] value(*| ):  0x%08X (0x%08X)\n\r", magicStack, *magicStack, *magicStack);	
 		k++;
-	}while(saddr++ && (k < 8));	
+		*magicStack++;
+	}while(k < pads + nargs  + 5);	
     }
 
 #endif
