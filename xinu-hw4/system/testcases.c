@@ -90,7 +90,7 @@ void testcases(void)
     kprintf("1) Test passing of many args\r\n");
     kprintf("2) Create three processes and run them\r\n");
 
-    kprintf("===TEST BEGIN===\r\n");
+    kprintf("===Starting processes===\r\n");
 
     // TODO: Test your operating system!
 
@@ -121,6 +121,6 @@ void testcases(void)
         break;
     }
 
-    kprintf("\r\n===TEST END===\r\n");
+    kprintf("\r\n===Done starting processes===\r\n");
     return;
 }

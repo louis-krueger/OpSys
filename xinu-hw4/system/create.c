@@ -98,12 +98,10 @@ syscall create(void *funcaddr, ulong ssize, char *name, ulong nargs, ...)
     ppcb = &proctab[pid];
  
 #ifdef DEBUG
-	kprintf("\n\n***DEBUG INFO START (create.c) before pcb setup***\n\r");
-	if (DEBUG > 0)
+	if (DEBUG > 4)
+	{	
+		kprintf("\n\n***DEBUG INFO START (create.c) before pcb setup***\n\r");
 		kprintf("process name:%s\n\r", ppcb->name);
-	
-	if (DEBUG > 1)
-	{
 		kprintf("proc state:%d\n\r", ppcb->state);    //ppcb->state same thing as (*ppcb).state
 		kprintf("stack base address:0x%08X\n\r", ppcb->stkbase);
 		kprintf("stack length:0x%08X\n\r", ppcb->stklen);
