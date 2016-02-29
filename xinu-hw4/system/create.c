@@ -1,4 +1,6 @@
 /**
+ * Written by Samuel Scheel & Louis Krueger
+ * TA-BOT:MAILTO samuel.scheel@marquette.edu louis.krueger@marquette.edu
  * @file create.c
  * @provides create, newpid, userret
  *
@@ -63,7 +65,7 @@ void *getstk(ulong);
  * @return the new process id
  */
 
-#define DEBUG 3    /** comment out definition to stop printing debug info  **/
+//#define DEBUG 3    /** comment out definition to stop printing debug info  **/
 
 syscall create(void *funcaddr, ulong ssize, char *name, ulong nargs, ...)
 {
@@ -87,13 +89,12 @@ syscall create(void *funcaddr, ulong ssize, char *name, ulong nargs, ...)
 	}
 #endif
     
-     pid = newpid();
+    pid = newpid();
     /* a little error checking      */
     if ((((ulong *)SYSERR) == saddr) || (SYSERR == pid))
     {
         return SYSERR;
     }
-
     numproc++;
     ppcb = &proctab[pid];
  
@@ -106,36 +107,19 @@ syscall create(void *funcaddr, ulong ssize, char *name, ulong nargs, ...)
 		kprintf("stack base address:0x%08X\n\r", ppcb->stkbase);
 		kprintf("stack length:0x%08X\n\r", ppcb->stklen);
 	}
-		kprintf("***DEBUG INFO END***\n\n\r");
+	kprintf("***DEBUG INFO END***\n\n\r");
 #endif
-
-
-   
+  
    	// TODO: Setup PCB entry for new process.
-	//1.PCB state set has been provided in the line below 
+	//1. Set PCB state to SUSPENDED 
    	ppcb->state = PRSUSP;
-
-	//2.need to set new proc pointer to the run time stack
-	ppcb->stkbase = funcaddr;
-	
-	//3.need to set stklen 
-	ppcb->stklen = ssize; 
-	
-	//4.need to set process name
+	//2. Set PCB stack base to the address of saddr minus its length
+	ppcb->stkbase = (ulong *)((ulong)saddr - ssize);
+	//3. Set PCB stack length to the address of saddr minus the stack's base
+	ppcb->stklen = ((ulong)saddr) - (ulong)ppcb->stkbase;
+	//4. Set PCB name to the argument above
 	strncpy(ppcb->name, &name[0], PNMLEN);
-	
-	//5.need to store process stack
-	memcpy(ppcb->regs, &saddr[0], PREGS);
-
-//This is the definition of the pcb, this comment is also at the top.
-	
-/*
- *    		int state;                  **< process state: PRCURR, etc.             *
- *    		void *stkbase;              **< base of run time stack                  *
- *    		int stklen;                 **< stack length                            *
- *    		char name[PNMLEN];          **< process name                            *
- *    		int regs[PREGS];            **< stored process registers                *
- */
+	//5. Set up PCB registers later...
 
 #ifdef DEBUG
 	kprintf("\n\n***DEBUG INFO START (create.c) after pcb setup***\n\r");
@@ -151,7 +135,6 @@ syscall create(void *funcaddr, ulong ssize, char *name, ulong nargs, ...)
 	kprintf("***DEBUG INFO END***\n\n\r");
 #endif
 
-
     /* Initialize stack with accounting block. */
     *saddr = STACKMAGIC;
     *--saddr = pid;
@@ -165,35 +148,39 @@ syscall create(void *funcaddr, ulong ssize, char *name, ulong nargs, ...)
     }
     /* If more than 4 args, pad record size to multiple of native memory */
     /*  transfer size.  Reserve space for extra args                     */
+
 #ifdef DEBUG 
 	if(DEBUG > 2)
+	{
 		kprintf("size of ppcb: (0x%08X) - %lo\n\r", sizeof(*ppcb), sizeof(*ppcb));
 		kprintf("pads value: [0x%08X] - %d\n\r", pads, pads); 
 		kprintf("nargs value: [0x%08X] - %d\n\n\r", nargs, nargs);
+	}
 #endif    
-
 
     for (i = 0; i < pads; i++)
     {
         *--saddr = 0;
-   	kprintf("PADDING**\n\r"); 
     }
-    
     // TODO: Initialize process context.
-    proctab[pid] = *ppcb;
+    ppcb->regs[PREG_SP] = (int) saddr;
+    ppcb->regs[PREG_LR] = (int) INITRET;
+    ppcb->regs[PREG_PC] = (int) funcaddr;
     // TODO:  Place arguments into activation record.
     //        See K&R 7.3 for example using va_start, va_arg and
     //        va_end macros for variable argument functions.
     va_start(ap, nargs);
     for (i = 0; i < nargs; i++)
     {
-	kprintf("added arg to stack!\n\r");
-        *--saddr = va_arg(ap, ulong);
+	if (i < 4)
+            ppcb->regs[i] = va_arg(ap, ulong);
+        else
+            saddr[i - 4] = va_arg(ap, ulong);
     }
     va_end(ap);
 
 #ifdef DEBUG
-	if(DEBUG > 0)
+    if(DEBUG > 0)
     {
 	int k = 0;
 	ulong *magicStack = saddr;
@@ -201,8 +188,9 @@ syscall create(void *funcaddr, ulong ssize, char *name, ulong nargs, ...)
 	{
 		kprintf("[0x%08X] value(*| ):  0x%08X (0x%08X)\n\r", magicStack, *magicStack, *magicStack);	
 		k++;
-		*magicStack++;
-	}while(k < pads + nargs  + 5);	
+		magicStack++;
+	}
+	while(k < pads + nargs  + 5);	
     }
 
 #endif

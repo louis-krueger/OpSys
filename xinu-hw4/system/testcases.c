@@ -1,12 +1,14 @@
 /**
+ * Written by Samuel Scheel & Louis Krueger
+ * TA-BOT:MAILTO samuel.scheel@marquette.edu louis.krueger@marquette.edu
  * @file testcases.c
  * @provides testcases
  *
  * $Id: testcases.c 175 2008-01-30 01:18:27Z brylow $
  *
- * Modified by:
+ * Modified by: by Samuel Scheel & Louis Krueger
+ * TA-BOT:MAILTO samuel.scheel@marquette.edu louis.krueger@marquette.edu
  *
- * and
  *
  */
 /* Embedded XINU, Copyright (C) 2007.  All rights reserved. */
