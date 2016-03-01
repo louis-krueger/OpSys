@@ -20,15 +20,19 @@ extern void main(int, char *);
 int testmain(int argc, char **argv)
 {
     int i = 0;
-    kprintf("Hello XINU World!\r\n");
-
+    kprintf("This is the modified test cases!\r\n");
     for (i = 0; i < 10; i++)
     {
-        kprintf("This is process %d\r\n", currpid);
-
+        kprintf("This is process %d", currpid);
+	kprintf(" ...That's a process\n\r");
         /* Uncomment the resched() line for cooperative scheduling. */
-        resched();
+        if (1)
+	{
+	     kprintf("rescheduling...\n\r");
+	     resched();
+	}
     }
+    kprintf("This process %d is done running.\r\n", currpid);
     return 0;
 }
 
@@ -94,13 +98,11 @@ void testcases(void)
 
     kprintf("===Starting processes===\r\n");
 
-    // TODO: Test your operating system!
-
     c = kgetc();
     switch (c)
     {
     case '0':
-        pid = create((void *)testmain, INITSTK, "MAIN1", 2, 0, NULL);
+        pid = create((void *)main, INITSTK, "MAIN1", 2, 0, NULL);
         printpcb(pid);
         break;
 
@@ -109,15 +111,14 @@ void testcases(void)
                      0x11111111, 0x22222222, 0x33333333, 0x44444444,
                      0x55555555, 0x66666666, 0x77777777, 0x88888888);
         printpcb(pid);
-        // TODO: print out stack with extra args
-        // TODO: ready(pid, 0);
+        ready(pid, 0);
         break;
 
     default:
         // Create three copies of a process, and let them play.
-        ready(create((void *)main, INITSTK, "MAIN1", 2, 0, NULL), 0);
-        ready(create((void *)main, INITSTK, "MAIN2", 2, 0, NULL), 0);
-        ready(create((void *)main, INITSTK, "MAIN3", 2, 0, NULL), 0);
+        ready(create((void *)testmain, INITSTK, "MAIN1", 2, 0, NULL), 0);
+        ready(create((void *)testmain, INITSTK, "MAIN2", 2, 0, NULL), 0);
+        ready(create((void *)testmain, INITSTK, "MAIN3", 2, 0, NULL), 0);
         while (numproc > 1)
             resched();
         break;

@@ -111,15 +111,19 @@ syscall create(void *funcaddr, ulong ssize, char *name, ulong nargs, ...)
 #endif
   
    	// TODO: Setup PCB entry for new process.
-	//1. Set PCB state to SUSPENDED 
+	
+	// Set PCB state to SUSPENDED 
    	ppcb->state = PRSUSP;
-	//2. Set PCB stack base to the address of saddr minus its length
+	
+	// Set PCB stack base to the address of saddr minus its length
 	ppcb->stkbase = (ulong *)((ulong)saddr - ssize);
-	//3. Set PCB stack length to the address of saddr minus the stack's base
+	
+	// Set PCB stack length to the address of saddr minus the stack's base
 	ppcb->stklen = ((ulong)saddr) - (ulong)ppcb->stkbase;
-	//4. Set PCB name to the argument above
+	
+	// Set PCB name to the argument above
 	strncpy(ppcb->name, &name[0], PNMLEN);
-	//5. Set up PCB registers later...
+	
 
 #ifdef DEBUG
 	kprintf("\n\n***DEBUG INFO START (create.c) after pcb setup***\n\r");
@@ -158,17 +162,25 @@ syscall create(void *funcaddr, ulong ssize, char *name, ulong nargs, ...)
 	}
 #endif    
 
+	/*Inspired by TA bot */
     for (i = 0; i < pads; i++)
     {
         *--saddr = 0;
     }
+    for (i = 0; i < PREGS; i++)
+    {
+        ppcb->regs[i] = 0;
+    }
     // TODO: Initialize process context.
-    ppcb->regs[PREG_SP] = (int) saddr;
-    ppcb->regs[PREG_LR] = (int) INITRET;
-    ppcb->regs[PREG_PC] = (int) funcaddr;
+    ppcb->regs[PREG_PC] = (int)funcaddr;
+    ppcb->regs[PREG_LR] = (int)INITRET;
+    ppcb->regs[PREG_SP] = (int)saddr;
     // TODO:  Place arguments into activation record.
     //        See K&R 7.3 for example using va_start, va_arg and
     //        va_end macros for variable argument functions.
+    
+	/* if greater than 4 inspired by TA bot */ 
+
     va_start(ap, nargs);
     for (i = 0; i < nargs; i++)
     {

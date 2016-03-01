@@ -16,16 +16,8 @@ process main(void)
 {
     /* Print information about the operating system  */
 
-    int i = 0;
-    kprintf("Hello Xinu World!\r\n");
-
-    for (i = 0; i < 10; i++)
-    {
-        kprintf("This is process %d\r\n", currpid);
-
-        /* Uncomment the resched() line below to see cooperative scheduling. */
-        // resched();
-    }
+     
+    kprintf("(main.c) This process [%d] start up has completed\r\n", currpid);
 
     return 0;
 }

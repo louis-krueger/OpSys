@@ -1,12 +1,11 @@
-/**
+/*
  * Written by Samuel Scheel & Louis Krueger
  * TA-BOT:MAILTO samuel.scheel@marquette.edu louis.krueger@marquette.edu
  * @file     ctxsw.s
  * @provides ctxsw
  *
  * COSC 3250 / COEN 4820 Assignment 4
- */
-/* Embedded XINU, Copyright (C) 2013.  All rights reserved. */
+ * Embedded XINU, Copyright (C) 2013.  All rights reserved. */
 
 #include <arm.h>
 
@@ -66,6 +65,5 @@ ctxsw:
 	mov     r12, r1
 	ldr	r1,  [r1,  #PREG_R1*4]
 	ldr	pc,  [r12, #PREG_PC*4]
-	bx	lr
 
 	.end ctxsw
