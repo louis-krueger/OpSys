@@ -38,15 +38,33 @@ int testmain(int argc, char **argv)
 
 void testbigargs(int a, int b, int c, int d, int e, int f, int g, int h)
 {
-    kprintf("Testing bigargs...\r\n");
-    kprintf("a = 0x%08X\r\n", a);
-    kprintf("b = 0x%08X\r\n", b);
-    kprintf("c = 0x%08X\r\n", c);
-    kprintf("d = 0x%08X\r\n", d);
-    kprintf("e = 0x%08X\r\n", e);
-    kprintf("f = 0x%08X\r\n", f);
-    kprintf("g = 0x%08X\r\n", g);
-    kprintf("h = 0x%08X\r\n", h);
+    kprintf("Process [%d] starting \n\rTesting bigargs...\r\n", currpid); 
+	     kprintf("rescheduling...\n\r");
+	     resched();
+    kprintf("Process [%d] - a = 0x%08X\r\n", currpid, a);
+	     kprintf("rescheduling...\n\r");
+	     resched();
+    kprintf("Process [%d] - b = 0x%08X\r\n", currpid, b);
+	     kprintf("rescheduling...\n\r");
+	     resched();
+    kprintf("Process [%d] - c = 0x%08X\r\n", currpid, c);
+	     kprintf("rescheduling...\n\r");
+	     resched();
+    kprintf("Process [%d] - d = 0x%08X\r\n", currpid, d);
+	     kprintf("rescheduling...\n\r");
+	     resched();
+    kprintf("Process [%d] - e = 0x%08X\r\n", currpid, e);
+	     kprintf("rescheduling...\n\r");
+	     resched();
+    kprintf("Process [%d] - f = 0x%08X\r\n", currpid, f);
+	     kprintf("rescheduling...\n\r");
+	     resched();
+    kprintf("Process [%d] - g = 0x%08X\r\n", currpid, g);
+	     kprintf("rescheduling...\n\r");
+	     resched();
+    kprintf("Process [%d] - h = 0x%08X\r\n", currpid, h);
+	     kprintf("rescheduling...\n\r");
+	     resched();
 }
 
 void printpcb(int pid)
@@ -94,7 +112,8 @@ void testcases(void)
 
     kprintf("0) Test creation of one process\r\n");
     kprintf("1) Test passing of many args\r\n");
-    kprintf("2) Create three processes and run them\r\n");
+    kprintf("2) Test passing many args to many processes, party mode\r\n");
+    kprintf("3) Create three processes and run them with rescheduling\r\n");
 
     kprintf("===Starting processes===\r\n");
 
@@ -114,6 +133,42 @@ void testcases(void)
         ready(pid, 0);
         break;
 
+    case '2':
+        // create many  programs with many args and have a party
+        kprintf("\r\n***PARTY MODE***\r\n"); 
+	ready(create((void *)testbigargs, INITSTK, "MAIN1337", 8,
+                    0x13371111, 0x22222222, 0x31337333, 0x44444444,
+                    0x55555555, 0x66666666, 0x71337777, 0x88888888), 0);
+	ready(create((void *)testbigargs, INITSTK, "MAIN2", 8,
+                    0x11111111, 0x22222222, 0x33333333, 0x44444444,
+                    0x55555555, 0x66666666, 0x77777777, 0x88888888), 0);
+	ready(create((void *)testbigargs, INITSTK, "MAIN3", 8,
+                    0x11111111, 0x22222222, 0x33333333, 0x44444444,
+                    0x55555555, 0x66666666, 0x77777777, 0x88888888), 0);
+	ready(create((void *)testbigargs, INITSTK, "MAIN3", 8,
+                    0x11111111, 0x22222222, 0x33333333, 0x44444444,
+                    0x55555555, 0x66666666, 0x77777777, 0x88888888), 0);
+	ready(create((void *)testbigargs, INITSTK, "MAIN3", 8,
+                    0x11111111, 0x22222222, 0x33333333, 0x44444444,
+                    0x55555555, 0x66666666, 0x77777777, 0x88888888), 0);
+	ready(create((void *)testbigargs, INITSTK, "MAIN3", 8,
+                    0x11111111, 0x22222222, 0x33333333, 0x44444444,
+                    0x55555555, 0x66666666, 0x77777777, 0x88888888), 0);
+	ready(create((void *)testbigargs, INITSTK, "MAIN3", 8,
+                    0x11111111, 0x22222222, 0x33333333, 0x44444444,
+                    0x55555555, 0x66666666, 0x77777777, 0x88888888), 0);
+	ready(create((void *)testbigargs, INITSTK, "MAIN3", 8,
+                    0x11111111, 0x22222222, 0x33333333, 0x44444444,
+                    0x55555555, 0x66666666, 0x77777777, 0x88888888), 0);
+	ready(create((void *)testbigargs, INITSTK, "MAIN3", 8,
+                    0x22221111, 0x22222222, 0x33333333, 0x44444444,
+                    0x55555555, 0x66666666, 0x77777777, 0x88888888), 0);
+        while (numproc > 1)
+            resched();
+        kprintf("\r\n\r\nThat party seemed oddly percise (O.o)\r\n\r\n");
+	break;
+
+    
     default:
         // Create three copies of a process, and let them play.
         ready(create((void *)testmain, INITSTK, "MAIN1", 2, 0, NULL), 0);
