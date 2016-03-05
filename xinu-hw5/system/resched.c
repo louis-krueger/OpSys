@@ -34,8 +34,8 @@ syscall resched(void)
     {
         oldproc->state = PRREADY;
         enqueue(currpid, readylist);
+	prioritize(currpid, readylist, oldproc->priority);
     }
-
     /* remove first process in ready queue */
     currpid = dequeue(readylist);
     newproc = &proctab[currpid];

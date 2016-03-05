@@ -50,7 +50,8 @@ void testcases(void)
     switch (c)
     {
     case '0':
-        ready(create((void *)printpid, INITSTK, 2, "PRINTER-A", 1, 5), 0);
+        kprintf("testing scheduling\r\n");
+	ready(create((void *)printpid, INITSTK, 2, "PRINTER-A", 1, 5), 0);
         ready(create((void *)printpid, INITSTK, 5, "PRINTER-B", 1, 5), 0);
         ready(create((void *)printpid, INITSTK, 10, "PRINTER-C", 1, 5),
               0);

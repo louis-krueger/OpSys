@@ -67,7 +67,7 @@ void *getstk(ulong);
 
 //#define DEBUG 3    /** comment out definition to stop printing debug info  **/
 
-syscall create(void *funcaddr, ulong ssize, char *name, ulong nargs, ...)
+syscall create(void *funcaddr, ulong ssize, ulong priority, char *name, ulong nargs, ...)
 {
     ulong *saddr;               /* stack address                */
     ulong pid;                  /* stores new process id        */
@@ -124,7 +124,8 @@ syscall create(void *funcaddr, ulong ssize, char *name, ulong nargs, ...)
 	// Set PCB name to the argument above
 	strncpy(ppcb->name, &name[0], PNMLEN);
 	
-
+	// Set PCB priority
+	ppcb->priority = priority;
 #ifdef DEBUG
 	kprintf("\n\n***DEBUG INFO START (create.c) after pcb setup***\n\r");
 	if (DEBUG > 0)

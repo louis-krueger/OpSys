@@ -8,7 +8,7 @@ COMP = system
 # Important system components
 C_FILES = initialize.c platforminit.c dispatch.c kprintf.c testcases.c \
 	  create.c kill.c ready.c resched.c queue.c getstk.c \
-	  clkhandler.c clkinit.c timer.c 
+	  clkhandler.c clkinit.c timer.c prioritize.c
 
 S_FILES = start.S halt.S irq_handler.S ctxsw.S \
 	  intutils.S
