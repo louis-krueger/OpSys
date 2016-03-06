@@ -32,7 +32,7 @@ qid_typ prioritize(pid_typ pid, qid_typ q, ulong key)
 			kprintf("next: %u\r\n", current.next);
 			kprintf("prev: %u\r\n", current.prev);
 		#endif
-		if (current.key < newProc.key)
+		if ((current.key < newProc.key) && (current.prev != EMPTY))
 		{
 			queuetab[current.next] = queuetab[newProc.next];
 			queuetab[newProc.prev] = queuetab[current.prev];
