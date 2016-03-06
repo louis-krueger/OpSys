@@ -24,7 +24,7 @@ syscall ready(pid_typ pid, bool resch)
     ppcb->state = PRREADY;
 
     enqueue(pid, readylist);
-
+    prioritize(pid, readylist, ppcb->priority);
     if (resch)
     {
         resched();

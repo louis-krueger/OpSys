@@ -13,7 +13,7 @@
  * clock cycles per second.
  */
 #define CLKTICKS_PER_SEC  1000
-#define QUANTUM        10       /* clock ticks until preemption        */
+#define QUANTUM        2       /* clock ticks until preemption        */
 
 extern volatile ulong preempt;
 extern volatile ulong clkticks;
