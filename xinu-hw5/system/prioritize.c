@@ -1,4 +1,6 @@
 /**
+ * Written by Samuel Scheel & Louis Krueger
+ * TA-BOT:MAILTO samuel.scheel@marquette.edu louis.krueger@marquette.edu
  * @file queue.c
  * @provides enqueue, remove, dequeue, getfirst, newqueue
  *
@@ -12,6 +14,7 @@
 qid_typ prioritize(pid_typ pid, qid_typ q, ulong key)
 {
 	struct qentry newProc = queuetab[pid];
+	newProc.key = key;
 	#ifdef DEBUG
 		kprintf("Key: %u\n\r", key);
 	#endif	
@@ -31,7 +34,7 @@ qid_typ prioritize(pid_typ pid, qid_typ q, ulong key)
                         kprintf("next: %u\r\n", current.next);
                         kprintf("prev: %u\r\n", current.prev);
                 #endif
-		if ((current.key > key)) //&& (current.prev != EMPTY))
+		if ((current.key > key) && (current.prev != EMPTY))
 		{
 			queuetab[current.next] = queuetab[newProc.next];
 			queuetab[newProc.prev] = queuetab[current.prev];
