@@ -7,12 +7,11 @@
 /* Embedded XINU, Copyright (C) 2007.  All rights reserved. */
 
 #include <xinu.h>
-#define DEBUG 2
+//#define DEBUG 2
 
 qid_typ prioritize(pid_typ pid, qid_typ q, ulong key)
 {
 	struct qentry newProc = queuetab[pid];
-	newProc.key = key;
 	#ifdef DEBUG
 		kprintf("Key: %u\n\r", key);
 	#endif	
@@ -28,17 +27,22 @@ qid_typ prioritize(pid_typ pid, qid_typ q, ulong key)
 	{
 		current = queuetab[current.prev];
 		#ifdef DEBUG
-			kprintf("current proc info\r\n");
-			kprintf("next: %u\r\n", current.next);
-			kprintf("prev: %u\r\n", current.prev);
-		#endif
-		if ((current.key < newProc.key) && (current.prev != EMPTY))
+                        kprintf("BEFORE current proc info\r\n");
+                        kprintf("next: %u\r\n", current.next);
+                        kprintf("prev: %u\r\n", current.prev);
+                #endif
+		if ((current.key > key) && (current.prev != EMPTY))
 		{
 			queuetab[current.next] = queuetab[newProc.next];
 			queuetab[newProc.prev] = queuetab[current.prev];
 			queuetab[newProc.next] = current;
 			queuetab[current.prev] = newProc;
 		}
+		#ifdef DEBUG
+			kprintf("AFTER current proc info\r\n");
+			kprintf("next: %u\r\n", current.next);
+			kprintf("prev: %u\r\n", current.prev);
+		#endif
 	}
 	return q;
 }

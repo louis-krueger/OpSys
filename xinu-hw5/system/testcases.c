@@ -60,6 +60,7 @@ void testcases(void)
         ready(create
               ((void *)bigargs, INITSTK, 20, "BIGARGS", 6, 10, 20, 30, 40,
                50, 60), 0);
+	kprintf("end of test scheduling\r\n");
         break;
 
     default:
