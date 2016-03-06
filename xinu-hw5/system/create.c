@@ -14,48 +14,6 @@ static pid_typ newpid(void);
 void userret(void);
 void *getstk(ulong);
 
-/*
- *
- *	typedef struct pentry
- *	{	
- *    		int state;                  **< process state: PRCURR, etc.             *
- *    		void *stkbase;              **< base of run time stack                  *
- *    		int stklen;                 **< stack length                            *
- *    		char name[PNMLEN];          **< process name                            *
- *    		int regs[PREGS];            **< stored process registers                *
- *	} pcb;
- *
- *
- *	Definition of pcb from proc.h header file from include\
- *
- *
- *
- *	***DEFINITION OF SOME IMPORTANT THINGS***
- *
- * unusual value marks the top of the process stack                      *
- *#define STACKMAGIC 0x0A0AAA99
- *
- * process state constants                                               *
- *
- *#define PRFREE      0       **< process slot is free                    *
- *#define PRCURR      1       **< process is currently running            *
- *#define PRSUSP      2       **< process is suspended                    *
- *#define PRREADY     3       **< process is on ready queue               *
- *
- * miscellaneous process definitions                                     *
- *
- *#define PNMLEN      16      **< length of process "name"                *
- *
- * the null process is always eligible to run                            *
- *#define NULLPROC    0       **< id of the null process                  *
- *#define BADPID     (-1)     **< used when invalid pid needed            *
- *
- */
-
-
-
-
-
 /**
  * Create a new process to start running a function.
  * @param funcaddr address of function that will begin in new process
@@ -65,7 +23,7 @@ void *getstk(ulong);
  * @return the new process id
  */
 
-//#define DEBUG 3    /** comment out definition to stop printing debug info  **/
+//#define DEBUG 99    /** comment out definition to stop printing debug info  **/
 
 syscall create(void *funcaddr, ulong ssize, ulong priority, char *name, ulong nargs, ...)
 {
@@ -99,7 +57,7 @@ syscall create(void *funcaddr, ulong ssize, ulong priority, char *name, ulong na
     ppcb = &proctab[pid];
  
 #ifdef DEBUG
-	if (DEBUG > 4)
+	if (DEBUG > 999)
 	{	
 		kprintf("\n\n***DEBUG INFO START (create.c) before pcb setup***\n\r");
 		kprintf("process name:%s\n\r", ppcb->name);

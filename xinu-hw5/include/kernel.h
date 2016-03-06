@@ -30,7 +30,7 @@ syscall resched(void);
 
 /* Kernel constants */
 
-#define PREEMPT   TRUE          /* preemptive rescheduling              */
+#define PREEMPT   FALSE          /* preemptive rescheduling              */
 #define AGING     FALSE         /* queue aging prevents starvation      */
 
 /* Assertions */

@@ -7,33 +7,39 @@
 /* Embedded XINU, Copyright (C) 2007.  All rights reserved. */
 
 #include <xinu.h>
-#define meow break
+#define DEBUG 2
 
 qid_typ prioritize(pid_typ pid, qid_typ q, ulong key)
 {
-	struct qentry *newProc = queuetail(q);
-	newProc->prev = NULL;
-	newProc->next = NULL;
-	struct qentry *current = newProc;
-	while (current->prev != NULL)
+	struct qentry newProc = queuetab[pid];
+	newProc.key = key;
+	#ifdef DEBUG
+		kprintf("Key: %u\n\r", key);
+	#endif	
+	struct qentry current = newProc;
+	#ifdef DEBUG
+		kprintf("new proc info\r\n");
+		kprintf("proc pid: %u\r\n", pid);
+		kprintf("next: %u\r\n", newProc.next);
+		kprintf("prev: %u\r\n", newProc.prev);
+	#endif
+
+	while (current.prev != EMPTY)
 	{
-		*current = queuetab[current->prev];
-		if (current->key < newProc->key)
+		current = queuetab[current.prev];
+		#ifdef DEBUG
+			kprintf("current proc info\r\n");
+			kprintf("next: %u\r\n", current.next);
+			kprintf("prev: %u\r\n", current.prev);
+		#endif
+		if (current.key < newProc.key)
 		{
-			queuetab[newProc->prev] = *current;
-			queuetab[newProc->next] = queuetab[current->next];
-			if (current->next != NULL)
-			{
-				queuetab[queuetab[current->next].prev] = *newProc;
-			}
-			queuetab[current->next] = *newProc;
-			meow;
-		}
-		else if (current->prev == NULL)
-		{
-			meow;
+			queuetab[current.next] = queuetab[newProc.next];
+			queuetab[newProc.prev] = queuetab[current.prev];
+			queuetab[newProc.next] = current;
+			queuetab[current.prev] = newProc;
 		}
 	}
-	return OK;
+	return q;
 }
 
