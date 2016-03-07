@@ -17,17 +17,21 @@ qid_typ printqueue(qid_typ);
 
 qid_typ prioritize(pid_typ pid, qid_typ q, ulong key)
 {
+//	if (numproc <= 1)
+//	{
+//		return enqueue(pid, q);
+//	}
         if (!isbadqueue(q) && !isbadpid(pid))
         {
                 #ifdef DEBUG
                         printqueue(q);
                 #endif
-                ulong head = queuehead(q);
+          //      ulong head = queuehead(q);
                 ulong currentindex = queuetail(q);
-//		while(queuetab[currentindex].key < key)
-  //              {
-    //            	currentindex = queuetab[currentindex].prev;
-      //          }
+	//	while((currentindex != head) && queuetab[currentindex].key < key)
+          //      { 
+	//		currentindex = queuetab[currentindex].prev;
+          //      }
 		queuetab[pid].next = currentindex;
 		queuetab[pid].prev = queuetab[currentindex].prev;
 		queuetab[queuetab[currentindex].prev].next = pid;
@@ -38,6 +42,11 @@ qid_typ prioritize(pid_typ pid, qid_typ q, ulong key)
 
 /*
 
+                do
+		{
+               		currentindex = queuetab[currentindex].next;
+                }
+		while((currentindex != head) && (queuetab[currentindex].key > key));
 		//ulong currentindex = queuetab[queuetail(q)].prev;
 		//queuetab[queuetab[currentindex].prev].next = EMPTY;
 		while(currentindex != head && queuetab[currentindex].key < key)

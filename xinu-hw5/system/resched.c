@@ -20,7 +20,7 @@ syscall resched(void)
     irqmask im;
     pcb *oldproc;               /* pointer to old process entry */
     pcb *newproc;               /* pointer to new process entry */
-    pid_typ head, tail;
+    //pid_typ head, tail;
 
     oldproc = &proctab[currpid];
 
@@ -31,7 +31,8 @@ syscall resched(void)
     int i = 0;
     for (i = 0; i < NPROC; i++)
     {
-        queuetab[i].key++;
+    	if(queuetab[i].key >= 1)
+	    queuetab[i].key--;
     }
 #endif
     /* place current process at end of ready queue */
@@ -39,7 +40,7 @@ syscall resched(void)
     {
         oldproc->state = PRREADY;
     //    enqueue(currpid, readylist);
-	prioritize(currpid, readylist, queuetab[currpid].key);
+	prioritize(currpid, readylist, oldproc->priority);
     }
     /* remove first process in ready queue */
     currpid = dequeue(readylist);

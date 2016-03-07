@@ -65,5 +65,6 @@ ctxsw:
 	mov     r12, r1
 	ldr	r1,  [r1,  #PREG_R1*4]
 	ldr	pc,  [r12, #PREG_PC*4]
+	bx lr
 
 	.end ctxsw

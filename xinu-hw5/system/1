@@ -51,10 +51,10 @@ void testcases(void)
     {
     case '0':
         kprintf("testing scheduling\r\n");
-	ready(create((void *)printpid, INITSTK, 5, "PRINTER-A", 1, 5), 1);
-        ready(create((void *)printpid, INITSTK, 4, "PRINTER-B", 1, 5), 1);
-        ready(create((void *)printpid, INITSTK, 3, "PRINTER-C", 1, 5), 1);
-        ready(create((void *)printpid, INITSTK, 2, "PRINTER-D", 1, 5), 1);
+	ready(create((void *)printpid, INITSTK, 2, "PRINTER-A", 1, 5), 1);
+        ready(create((void *)printpid, INITSTK, 3, "PRINTER-B", 1, 5), 1);
+        ready(create((void *)printpid, INITSTK, 4, "PRINTER-C", 1, 5),1);
+        ready(create((void *)printpid, INITSTK, 5, "PRINTER-D", 1, 5), 1);
 	ready(create((void *)bigargs,  INITSTK, 7, "BIGARGS-A", 6, 7, 20, 30, 40, 50, 60), 1);
         ready(create((void *)bigargs,  INITSTK, 8, "BIGARGS-B", 6, 8, 20, 30, 40, 50, 60), 1);
         ready(create((void *)bigargs,  INITSTK, 9, "BIGARGS-C", 6, 9, 20, 30, 40, 50, 60), 1);
