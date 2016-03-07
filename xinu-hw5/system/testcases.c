@@ -23,12 +23,13 @@ void bigargs(int a, int b, int c, int d, int e, int f)
 
 void printpid(int times)
 {
-    int i = 0;
-    enable();
+    int i = 0;	    
+    //enable();
+    //resched();
     for (i = 0; i < times; i++)
     {
-        kprintf("This is process %d\r\n", currpid);
         resched();
+        kprintf("This is process %d\r\n", currpid);
     }
 }
 
@@ -52,12 +53,12 @@ void testcases(void)
     case '0':
         kprintf("testing scheduling\r\n");
 	ready(create((void *)printpid, INITSTK, 2, "PRINTER-A", 1, 5), 1);
-        ready(create((void *)printpid, INITSTK, 5, "PRINTER-B", 1, 5), 1);
-        ready(create((void *)printpid, INITSTK, 10, "PRINTER-C", 1, 5),1);
+        ready(create((void *)printpid, INITSTK, 3, "PRINTER-B", 1, 5), 1);
+        ready(create((void *)printpid, INITSTK, 4, "PRINTER-C", 1, 5),1);
         ready(create((void *)printpid, INITSTK, 5, "PRINTER-D", 1, 5), 1);
-	ready(create((void *)bigargs,  INITSTK, 20, "BIGARGS-A", 6, 20, 20, 30, 40, 50, 60), 1);
-        ready(create((void *)bigargs,  INITSTK, 4, "BIGARGS-B", 6, 5, 20, 30, 40, 50, 60), 1);
-        ready(create((void *)bigargs,  INITSTK, 10, "BIGARGS-C", 6, 10, 20, 30, 40, 50, 60), 1);
+	ready(create((void *)bigargs,  INITSTK, 6, "BIGARGS-A", 6, 6, 20, 30, 40, 50, 60), 1);
+        ready(create((void *)bigargs,  INITSTK, 6, "BIGARGS-B", 6, 6, 20, 30, 40, 50, 60), 1);
+        ready(create((void *)bigargs,  INITSTK, 6, "BIGARGS-C", 6, 6, 20, 30, 40, 50, 60), 1);
 	kprintf("end of test scheduling\r\n");
         break;
 

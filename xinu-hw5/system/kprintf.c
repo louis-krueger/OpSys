@@ -133,7 +133,6 @@ syscall kputc(uchar c)
  */
 syscall kprintf(const char *format, ...)
 {
-    preempt = 0;
     int retval;
     va_list ap;
 
@@ -141,5 +140,4 @@ syscall kprintf(const char *format, ...)
     retval = _doprnt(format, ap, (int (*)(int, int))kputc, 0);
     va_end(ap);
     return retval;
-    preempt = QUANTUM;
 }

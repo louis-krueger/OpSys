@@ -31,7 +31,7 @@ syscall resched(void);
 /* Kernel constants */
 
 #define PREEMPT   TRUE          /* preemptive rescheduling              */
-#define AGING     FALSE         /* queue aging prevents starvation      */
+#define AGING     TRUE          /* queue aging prevents starvation      */
 
 /* Assertions */
 #define ASSERT(cond)              if ( !(cond) ) return SYSERR
