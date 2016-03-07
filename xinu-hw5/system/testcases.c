@@ -16,6 +16,7 @@
 
 void bigargs(int a, int b, int c, int d, int e, int f)
 {
+   // enable();
     resched();
     kprintf("bigargs(%d, %d, %d, %d, %d, %d) == %d\r\n",
             a, b, c, d, e, f, a + b + c + d + e + f);
@@ -42,7 +43,7 @@ void testcases(void)
     kprintf("===TEST BEGIN===\r\n");
 
     kprintf("0) Test priority scheduling\r\n");
-
+    kprintf("1) Test priority scheduling, utilize aging\r\n");
 
     // TODO: Test your operating system!
 
@@ -51,17 +52,29 @@ void testcases(void)
     {
     case '0':
         kprintf("testing scheduling\r\n");
-	ready(create((void *)printpid, INITSTK, 5, "PRINTER-A", 1, 5), 1);
-        ready(create((void *)printpid, INITSTK, 4, "PRINTER-B", 1, 5), 1);
-        ready(create((void *)printpid, INITSTK, 3, "PRINTER-C", 1, 5), 1);
+	ready(create((void *)printpid, INITSTK, 2, "PRINTER-A", 1, 5), 1);
+        ready(create((void *)printpid, INITSTK, 5, "PRINTER-B", 1, 5), 1);
+        ready(create((void *)printpid, INITSTK, 10, "PRINTER-C", 1, 5), 1);
         ready(create((void *)printpid, INITSTK, 2, "PRINTER-D", 1, 5), 1);
-	ready(create((void *)bigargs,  INITSTK, 7, "BIGARGS-A", 6, 7, 20, 30, 40, 50, 60), 1);
-        ready(create((void *)bigargs,  INITSTK, 8, "BIGARGS-B", 6, 8, 20, 30, 40, 50, 60), 1);
-        ready(create((void *)bigargs,  INITSTK, 9, "BIGARGS-C", 6, 9, 20, 30, 40, 50, 60), 1);
+	ready(create((void *)bigargs,  INITSTK, 20, "BIGARGS-A", 6, 20, 20, 30, 40, 50, 60), 1);
+        ready(create((void *)bigargs,  INITSTK, 7, "BIGARGS-B", 6, 7, 20, 30, 40, 50, 60), 1);
+        ready(create((void *)bigargs,  INITSTK, 2, "BIGARGS-C", 6, 2, 20, 30, 40, 50, 60), 1);
 	kprintf("end of test scheduling\r\n");
         break;
 
-    default:
+    case '1':
+        kprintf("testing scheduling\r\n");	
+	ready(create((void *)printpid, INITSTK, 1, "PRINTER-A", 1, 5), 1);
+        ready(create((void *)printpid, INITSTK, 10, "PRINTER-B", 1, 5), 1);
+        ready(create((void *)printpid, INITSTK, 20, "PRINTER-C", 1, 5), 1);
+        ready(create((void *)printpid, INITSTK, 30, "PRINTER-D", 1, 5), 1);
+	ready(create((void *)bigargs,  INITSTK, 99, "BIGARGS-A", 6, 20, 20, 30, 40, 50, 60), 1);
+        ready(create((void *)bigargs,  INITSTK, 99, "BIGARGS-B", 6, 7, 20, 30, 40, 50, 60), 1);
+        ready(create((void *)bigargs,  INITSTK, 99, "BIGARGS-C", 6, 2, 20, 30, 40, 50, 60), 1);
+	kprintf("end of test scheduling\r\n");
+        break;
+    
+   default:
         break;
     }
 

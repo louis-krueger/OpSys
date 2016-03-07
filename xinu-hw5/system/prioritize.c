@@ -11,54 +11,29 @@
 
 #include <xinu.h>
 
-//#define DEBUG 1
+//#define DEBUG 
 
 qid_typ printqueue(qid_typ);
 
 qid_typ prioritize(pid_typ pid, qid_typ q, ulong key)
 {
-//	if (numproc <= 1)
-//	{
-//		return enqueue(pid, q);
-//	}
         if (!isbadqueue(q) && !isbadpid(pid))
         {
                 #ifdef DEBUG
                         printqueue(q);
                 #endif
-          //      ulong head = queuehead(q);
-                ulong currentindex = queuetail(q);
-	//	while((currentindex != head) && queuetab[currentindex].key < key)
-          //      { 
-	//		currentindex = queuetab[currentindex].prev;
-          //      }
-		queuetab[pid].next = currentindex;
-		queuetab[pid].prev = queuetab[currentindex].prev;
-		queuetab[queuetab[currentindex].prev].next = pid;
-		queuetab[currentindex].prev = pid;
+                ulong head = queuehead(q);
+                ulong currentindex =queuetab[queuetail(q)].prev;
+		while((currentindex != head) && queuetab[currentindex].key < key)
+                { 
+			currentindex = queuetab[currentindex].prev;
+                }
+		queuetab[pid].prev = currentindex;
+		queuetab[pid].next = queuetab[currentindex].next;
+		queuetab[currentindex].next = pid;
+		queuetab[queuetab[pid].next].prev = pid;
 		queuetab[pid].key = key;
 		return q;
-
-
-/*
-
-                do
-		{
-               		currentindex = queuetab[currentindex].next;
-                }
-		while((currentindex != head) && (queuetab[currentindex].key > key));
-		//ulong currentindex = queuetab[queuetail(q)].prev;
-		//queuetab[queuetab[currentindex].prev].next = EMPTY;
-		while(currentindex != head && queuetab[currentindex].key < key)
-                {
-                        currentindex = queuetab[currentindex].prev;
-                }
-                queuetab[pid].next = currentindex;
-                queuetab[pid].prev = queuetab[currentindex].prev;
-                queuetab[queuetab[currentindex].prev].next = pid;
-                queuetab[currentindex].prev = pid;
-                queuetab[pid].key = key;
-*/		//return OK;
         }
         else
         {
@@ -74,8 +49,8 @@ qid_typ prioritize(pid_typ pid, qid_typ q, ulong key)
                 kprintf("head: %u\r\n", queuehead(q));
                 kprintf("tail: %u\r\n", queuetail(q));
                 kprintf("entering loop\r\n");
-               // while(current != head)
-                //{
+               	while(current != head)
+               	{
                         kprintf("current.prev: %u\r\n", queuetab[current].prev);
                         kprintf("current process: %u\r\n", current);
                         kprintf("\tname: %s\r\n", proctab[currpid].name);
@@ -84,8 +59,8 @@ qid_typ prioritize(pid_typ pid, qid_typ q, ulong key)
                         kprintf("\tnumber of procs: %u\r\n", numproc);
                         kprintf("\tstate: %u\r\n", proctab[currpid].state);
                         kprintf("current.next: %u\r\n\r\n", queuetab[current].next);
-                   //     current = queuetab[current].prev;
-                //}
+                        current = queuetab[current].prev;
+                }
         	return OK;
         }
 #endif

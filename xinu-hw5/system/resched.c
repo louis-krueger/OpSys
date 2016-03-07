@@ -20,7 +20,7 @@ syscall resched(void)
     irqmask im;
     pcb *oldproc;               /* pointer to old process entry */
     pcb *newproc;               /* pointer to new process entry */
-    //pid_typ head, tail;
+    pid_typ current, tail;
 
     oldproc = &proctab[currpid];
 
@@ -28,18 +28,25 @@ syscall resched(void)
 
     /* TODO: Add queue aging to the system. */
 #if AGING
-    int i = 0;
-    for (i = 0; i < NPROC; i++)
-    {
-    	if(queuetab[i].key >= 1)
-	    queuetab[i].key--;
-    }
+   current = queuetab[queuehead(readylist)].next;
+   tail = queuetail(readylist);
+   while(current < tail)
+   {
+	queuetab[current].key++;
+	current = queuetab[current].next;
+   }
+
+   //int i = 0;
+   //for (i = 0; i < NPROC; i++)
+   //{
+   //  	if(queuetab[i].key >= 1)
+   //	    queuetab[i].key--;
+   // }
 #endif
     /* place current process at end of ready queue */
     if (PRCURR == oldproc->state)
     {
         oldproc->state = PRREADY;
-    //    enqueue(currpid, readylist);
 	prioritize(currpid, readylist, oldproc->priority);
     }
     /* remove first process in ready queue */
