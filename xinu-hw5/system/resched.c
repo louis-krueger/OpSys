@@ -36,12 +36,6 @@ syscall resched(void)
 	current = queuetab[current].next;
    }
 
-   //int i = 0;
-   //for (i = 0; i < NPROC; i++)
-   //{
-   //  	if(queuetab[i].key >= 1)
-   //	    queuetab[i].key--;
-   // }
 #endif
     /* place current process at end of ready queue */
     if (PRCURR == oldproc->state)

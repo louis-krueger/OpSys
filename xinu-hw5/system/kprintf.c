@@ -133,14 +133,14 @@ syscall kputc(uchar c)
  */
 syscall kprintf(const char *format, ...)
 {
-    irqmask im;
-    im = disable();
+    //irqmask im;
+    //im = disable();
     int retval;
     va_list ap;
 
     va_start(ap, format);
     retval = _doprnt(format, ap, (int (*)(int, int))kputc, 0);
     va_end(ap);
-    restore(im);
+    //restore(im);
     return retval;
 }
