@@ -151,9 +151,16 @@ static int sysinit(void)
 
 #if RTCLOCK
     /* initialize real time clock */
-    clkinit();
+    //clkinit();
     /* clear UART interrupt */
-    disable_irq(57);
+    //disable_irq(57);
+    /* clear UART interrupt */
+    disable_irq(IRQ_USB);
+    disable_irq(IRQ_PCM);
+    disable_irq(IRQ_PL011);
+    disable_irq(IRQ_SD);
+    /* initialize real time clock */
+    clkinit();
 #endif
 
     return OK;

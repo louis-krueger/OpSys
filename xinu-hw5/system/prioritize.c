@@ -13,9 +13,8 @@
 
 //#define DEBUG 
 
-qid_typ printqueue(qid_typ);
-
-qid_typ prioritize(pid_typ pid, qid_typ q, ulong key)
+int  printqueue(qid_typ);
+int prioritize(pid_typ pid, qid_typ q, ulong key)
 {
         if (!isbadqueue(q) && !isbadpid(pid))
         {
@@ -41,7 +40,7 @@ qid_typ prioritize(pid_typ pid, qid_typ q, ulong key)
         }
 }
 #ifdef DEBUG
-        qid_typ printqueue(qid_typ q)
+        int printqueue(qid_typ q)
         {
                 ulong current = queuetail(q);
                 ulong tail = queuetail(q);

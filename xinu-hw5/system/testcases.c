@@ -16,7 +16,7 @@
 
 void bigargs(int a, int b, int c, int d, int e, int f)
 {
-   // enable();
+    enable();
     resched();
     kprintf("bigargs(%d, %d, %d, %d, %d, %d) == %d\r\n",
             a, b, c, d, e, f, a + b + c + d + e + f);

@@ -62,6 +62,6 @@ pid_typ enqueue(pid_typ, qid_typ);
 pid_typ remove(pid_typ);
 pid_typ dequeue(qid_typ);
 qid_typ newqueue(void);
-qid_typ prioritize(pid_typ pid, qid_typ q, ulong key);
+int prioritize(pid_typ pid, qid_typ q, ulong key);
 
 #endif                          /* _QUEUE_H_ */
