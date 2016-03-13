@@ -1,4 +1,4 @@
-../system/main.o: ../system/main.c ../include/xinu.h \
+../system/semcount.o: ../system/semcount.c ../include/xinu.h \
  ../include/interrupt.h ../include/stddef.h ../include/bcm2835.h \
  ../include/kernel.h ../include/stdarg.h ../include/conf.h \
  ../include/arm.h ../include/proc.h ../include/queue.h \

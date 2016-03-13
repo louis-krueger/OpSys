@@ -24,6 +24,7 @@
 #define PRCURR      1       /**< process is currently running            */
 #define PRSUSP      2       /**< process is suspended                    */
 #define PRREADY     3       /**< process is on ready queue               */
+#define PRWAIT	    4	    /**< process is waiting for signal           */
 
 /* miscellaneous process definitions                                     */
 
@@ -49,6 +50,7 @@ typedef struct pentry
     char name[PNMLEN];          /**< process name                            */
     int regs[PREGS];            /**< stored process registers                */
     ulong priority;		/**< process priority			     */
+    int sem;			/**< process semaphore			     */
 } pcb;
 
 /* process initialization constants */

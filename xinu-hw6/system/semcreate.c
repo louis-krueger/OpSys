@@ -7,7 +7,7 @@
 
 #include <xinu.h>
 
-semblk      semtab[NSEM];       /* Semaphore table                       */
+semblk semtab[NSEM];            /* Semaphore table                       */
 
 static semaphore semalloc(void);
 

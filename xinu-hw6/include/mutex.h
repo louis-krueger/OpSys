@@ -11,6 +11,6 @@
 void mutexInit(void);
 void mutexAcquire(void);
 void mutexRelease(void);
-bool testAndSet(volatile ulong *);
+bool testAndSet(volatile bool *);
 
 #endif                          /* _MUTEX_H */

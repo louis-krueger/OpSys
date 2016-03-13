@@ -116,7 +116,7 @@ static int sysinit(void)
 {
     int i = 0;
     pcb *ppcb = NULL;           /* process control block pointer */
-    semblk  *psem = NULL;       /* semaphore block pointer       */
+    semblk *psem = NULL;        /* semaphore block pointer       */
 
     /* Initialize system variables */
     /* Count this NULLPROC as the first process in the system. */
