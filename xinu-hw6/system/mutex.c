@@ -1,7 +1,11 @@
 /**
  * @file mutex.c
  * @provides mutexInit, mutexAcquire, mutexRelease
- *
+ * TA-BOT:MAILTO samuel.scheel@marquette.edu louis.krueger@marquette.edu
+ * Modified by
+ * Samuel Scheel
+ * and
+ * Louis Krueger
  */
 
 #include <xinu.h>
