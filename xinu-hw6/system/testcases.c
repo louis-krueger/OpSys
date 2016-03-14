@@ -12,6 +12,10 @@
 /* Embedded XINU, Copyright (C) 2010, 2014.  All rights reserved. */
 
 #include <xinu.h>
+#include <debug.h>
+
+typedef int buffer_item;
+#define BUFFER_SIZE 5
 
 ulong rand(void)
 {
@@ -34,8 +38,6 @@ syscall sleep(int time)
 }
 
 /* BEGIN Textbook code from Ch 5 Programming Project 3, Silberschatz p. 254 */
-typedef int buffer_item;
-#define BUFFER_SIZE 5
 
 struct boundedbuffer
 {
@@ -48,28 +50,69 @@ struct boundedbuffer
     semaphore mutex;
 };
 
+void printpid(int times)
+{
+	int i = 0;
+	//enable
+	for (i = 0; i < times; i++)
+	{
+		resched();
+		kprintf("This is process %d - [%s]\r\n", currpid, proctab[currpid].name);
+	}
+}
+
 int insert_item(struct boundedbuffer *bb, buffer_item item)
 {
     // TODO:
     /* insert item into buffer
      * return 0 if successful, otherwise
      * return SYSERR indicating an error condition */
-    
-return 0;
+	if(wait((*bb).full) == OK && wait((*bb).mutex) == OK)
+	{	
+		(*bb).buffer[(*bb).buffertail] = item;			
+		(*bb).buffertail = ((*bb).buffertail + 1 ) % BUFFER_SIZE;
+	}
+	else
+	{	 	
+		return SYSERR;
+	}	
+	
+	if(signal((*bb).empty) == OK && signal((*bb).mutex) == OK)
+	{
+		return 0;
+	}
+	return SYSERR;
 }
 
-int remove_item(struct boundedbuffer *bb, buffer_item * item)
+int remove_item(struct boundedbuffer *bb, buffer_item *item)
 {
     // TODO:
     /* remove an object from buffer
      * placing it in item
      * return 0 if successful, otherwise
      * return SYSERR indicating an error condition */
-    return 0;
+        if(wait((*bb).empty) == OK && wait((*bb).mutex) == OK)
+	{
+        	//kprintf("wait on mutex - S\r\n");
+		*item = (*bb).buffer[(*bb).bufferhead];
+		(*bb).bufferhead = ((*bb).bufferhead + 1) % BUFFER_SIZE;
+		//kprintf("removed item [%d]\r\n", *item);
+	}
+        else
+	{
+		return SYSERR;
+        }
+        if(signal((*bb).full) == OK && signal((*bb).mutex) == OK)
+        {
+		return 0;
+        }
+        //kprintf("remove completed S\r\n");
+        return SYSERR;	
 }
 
 void producer(struct boundedbuffer *bb)
 {
+    //kprintf("producer created\n\r");
     buffer_item item;
     enable();
     while (1)
@@ -77,7 +120,8 @@ void producer(struct boundedbuffer *bb)
         /* sleep for a random period of time */
         sleep(rand() % 100);
         /* generate a random number */
-        item = rand();
+        //kprintf("in producers loop\r\n");
+	item = (rand() % 10000);
         if (insert_item(bb, item))
             kprintf("report error condition\r\n");
         else
@@ -86,14 +130,16 @@ void producer(struct boundedbuffer *bb)
 }
 
 void consumer(struct boundedbuffer *bb)
-{
+{	
+    //kprintf("consumer created\n\r");
     buffer_item item;
     enable();
     while (1)
     {
         /* sleep for a random period of time */
         sleep(rand() % 100);
-        if (remove_item(bb, &item))
+        //kprintf("in consumers loop\r\n");
+	if (remove_item(bb, &item))
             kprintf("report error condition\r\n");
         else
             kprintf("consumer %d consumed %d\r\n", currpid, item);
@@ -109,23 +155,44 @@ void testcases(void)
 {
     int c;
     struct boundedbuffer bbuff;
-
+	
+    kprintf("q) Test simple queue\r\n");
     kprintf("0) Test 1 producer, 1 consumer, same priority\r\n");
 
-    kprintf("===TEST BEGIN===");
+    kprintf("===TEST BEGIN===\r\n");
 
     // TODO: Test your operating system!
 
     c = kgetc();
     switch (c)
     {
-    case '0':
+	case 'q':
+        kprintf("Testing scheduling case: %c\r\n", c);
+        printqueue(readylist);
+	ready(create((void *)printpid, INITSTK, 5, "PRINTER-D", 1, 5),  0);
+        printqueue(readylist);
+        ready(create((void *)printpid, INITSTK, 10, "PRINTER-C", 1, 5), 0);
+        printqueue(readylist);
+        ready(create((void *)printpid, INITSTK, 15, "PRINTER-B", 1, 5), 0);
+        printqueue(readylist);
+        ready(create((void *)printpid, INITSTK, 20, "PRINTER-A", 1, 5), 0);
+        printqueue(readylist);
+        kprintf("end of test scheduling\r\n");
+	break;
+	
+	case '0':
         // TODO:
         // Initialize bbuff, and create producer and consumer processes
-
-        break;
-
-    default:
+	bbuff.bufferhead = 0;
+	bbuff.buffertail = 0;
+	bbuff.empty = semcreate(0);
+	bbuff.full = semcreate(BUFFER_SIZE);
+	bbuff.mutex = semcreate(1);				
+	ready(create((void *)producer, INITSTK, 10, "producer", 1, &bbuff), 0);
+	ready(create((void *)consumer, INITSTK, 10, "consumer", 1, &bbuff), 0);
+	break;
+	
+   	 default:
         break;
     }
 

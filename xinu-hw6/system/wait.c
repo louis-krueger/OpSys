@@ -16,8 +16,7 @@ syscall wait(semaphore sem)
 {
     register semblk *semptr = NULL;
     register pcb *ppcb = NULL;
-    irqmask im;
-
+    irqmask im;	
     im = disable();
     if (isbadsem(sem))
     {
