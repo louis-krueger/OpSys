@@ -67,21 +67,28 @@ int insert_item(struct boundedbuffer *bb, buffer_item item)
     /* insert item into buffer
      * return 0 if successful, otherwise
      * return SYSERR indicating an error condition */
-	if(wait((*bb).full) == OK && wait((*bb).mutex) == OK)
-	{	
-		(*bb).buffer[(*bb).buffertail] = item;			
-		(*bb).buffertail = ((*bb).buffertail + 1 ) % BUFFER_SIZE;
-	}
-	else
-	{	 	
-		return SYSERR;
-	}	
-	
-	if(signal((*bb).empty) == OK && signal((*bb).mutex) == OK)
+	if(wait((*bb).full) != OK)
 	{
-		return 0;
+		return SYSERR;
 	}
-	return SYSERR;
+
+	if (wait((*bb).mutex) != OK)
+	{
+		return SYSERR;
+	}
+	mutexAcquire();
+	(*bb).buffer[(*bb).buffertail] = item;			
+	(*bb).buffertail = ((*bb).buffertail + 1 ) % BUFFER_SIZE;
+	mutexRelease();	 	
+	if(signal((*bb).empty) != OK)
+	{
+		return SYSERR;
+	}
+	if(signal((*bb).mutex) != OK)
+	{
+		return SYSERR;
+	}
+	return 0;
 }
 
 int remove_item(struct boundedbuffer *bb, buffer_item *item)
@@ -91,23 +98,28 @@ int remove_item(struct boundedbuffer *bb, buffer_item *item)
      * placing it in item
      * return 0 if successful, otherwise
      * return SYSERR indicating an error condition */
-        if(wait((*bb).empty) == OK && wait((*bb).mutex) == OK)
-	{
-        	//kprintf("wait on mutex - S\r\n");
-		*item = (*bb).buffer[(*bb).bufferhead];
-		(*bb).bufferhead = ((*bb).bufferhead + 1) % BUFFER_SIZE;
-		//kprintf("removed item [%d]\r\n", *item);
-	}
-        else
+	if(wait((*bb).empty) != OK)
 	{
 		return SYSERR;
-        }
-        if(signal((*bb).full) == OK && signal((*bb).mutex) == OK)
-        {
-		return 0;
-        }
-        //kprintf("remove completed S\r\n");
-        return SYSERR;	
+	}
+	if (wait((*bb).mutex) != OK)
+	{
+		return SYSERR;
+	}
+	mutexAcquire();
+	*item = (*bb).buffer[(*bb).bufferhead];
+	(*bb).bufferhead = ((*bb).bufferhead + 1) % BUFFER_SIZE;
+	mutexRelease();
+	//kprintf("removed item [%d]\r\n", *item);
+	if(signal((*bb).full) != OK)
+	{
+		return SYSERR;
+	}
+	if(signal((*bb).mutex) != OK)
+	{
+		return SYSERR;
+	}
+	return 0;
 }
 
 void producer(struct boundedbuffer *bb)
@@ -123,10 +135,18 @@ void producer(struct boundedbuffer *bb)
         //kprintf("in producers loop\r\n");
 	item = (rand() % 10000);
         if (insert_item(bb, item))
-            kprintf("report error condition\r\n");
-        else
-            kprintf("producer %d produced %d\r\n", currpid, item);
-    }
+		{
+		mutexAcquire();
+		kprintf("report error condition\r\n");
+        	mutexRelease();
+		}
+		else
+        {
+		mutexAcquire();
+		kprintf("producer %d produced %d\r\n", currpid, item);
+    		mutexRelease();
+		}	
+	}
 }
 
 void consumer(struct boundedbuffer *bb)
@@ -139,11 +159,19 @@ void consumer(struct boundedbuffer *bb)
         /* sleep for a random period of time */
         sleep(rand() % 100);
         //kprintf("in consumers loop\r\n");
-	if (remove_item(bb, &item))
-            kprintf("report error condition\r\n");
-        else
-            kprintf("consumer %d consumed %d\r\n", currpid, item);
-    }
+		if (remove_item(bb, &item))
+    	{	
+		mutexAcquire();
+	   	kprintf("report error condition\r\n");
+    		mutexRelease();
+		} 
+	   	else
+    	{ 
+		mutexAcquire();
+	   	kprintf("consumer %d consumed %d\r\n", currpid, item);
+    		mutexRelease();
+		}
+	}
 }
 
 /* END Textbook code from Ch 5 Programming Project 3, Silberschatz p. 254 */
@@ -155,10 +183,13 @@ void testcases(void)
 {
     int c;
     struct boundedbuffer bbuff;
-	
+    //#undef BUFFER_SIZE	//Don't ever does this, not even in homework assignments!
+    //#define BUFFER_SIZE 10  //This was for testing the buffer logic These must be commented out 
     kprintf("q) Test simple queue\r\n");
     kprintf("0) Test 1 producer, 1 consumer, same priority\r\n");
-
+    kprintf("1) Test 1 producer, 1 consumer, producer 10x priority\r\n");
+    kprintf("2) Test 1 producer, 4 consumers, producer 10x priority\r\n");
+    kprintf("3) Test 4 producers, 1 consumer, consumer 10x priority\r\n");
     kprintf("===TEST BEGIN===\r\n");
 
     // TODO: Test your operating system!
@@ -192,7 +223,44 @@ void testcases(void)
 	ready(create((void *)consumer, INITSTK, 10, "consumer", 1, &bbuff), 0);
 	break;
 	
-   	 default:
+	case '1':
+	bbuff.bufferhead = 0;
+	bbuff.buffertail = 0;
+	bbuff.empty = semcreate(0);
+	bbuff.full = semcreate(BUFFER_SIZE);
+	bbuff.mutex = semcreate(1);				
+	ready(create((void *)producer, INITSTK, 100, "producer", 1, &bbuff), 0);
+	ready(create((void *)consumer, INITSTK, 10, "consumer", 1, &bbuff), 0);
+	break;
+	
+	case '2':
+	bbuff.bufferhead = 0;
+	bbuff.buffertail = 0;
+	bbuff.empty = semcreate(0);
+	bbuff.full = semcreate(BUFFER_SIZE);
+	bbuff.mutex = semcreate(1);				
+	ready(create((void *)producer, INITSTK, 100, "producer", 1, &bbuff), 0);
+	ready(create((void *)consumer, INITSTK, 10, "consumer1", 1, &bbuff), 0);
+	ready(create((void *)consumer, INITSTK, 10, "consumer2", 1, &bbuff), 0);
+	ready(create((void *)consumer, INITSTK, 10, "consumer3", 1, &bbuff), 0);
+	ready(create((void *)consumer, INITSTK, 10, "consumer4", 1, &bbuff), 0);
+	break;
+	
+	case '3':
+	bbuff.bufferhead = 0;
+	bbuff.buffertail = 0;
+	bbuff.empty = semcreate(0);
+	bbuff.full = semcreate(BUFFER_SIZE);
+	bbuff.mutex = semcreate(1);				
+	ready(create((void *)producer, INITSTK, 10, "producer1", 1, &bbuff), 0);
+	ready(create((void *)producer, INITSTK, 10, "producer2", 1, &bbuff), 0);
+	ready(create((void *)producer, INITSTK, 10, "producer3", 1, &bbuff), 0);
+	ready(create((void *)producer, INITSTK, 10, "producer4", 1, &bbuff), 0);
+	ready(create((void *)consumer, INITSTK, 100, "consumer", 1, &bbuff), 0);
+	break;
+
+   	default:
+	kprintf("\r\nNow you've done it\r\n");
         break;
     }
 

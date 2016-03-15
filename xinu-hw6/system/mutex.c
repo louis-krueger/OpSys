@@ -36,7 +36,9 @@ void mutexAcquire(void)
     waiting[currpid] = TRUE;
     key = TRUE;
     while (waiting[currpid] && key)
+    {
         key = testAndSet(&lock);
+    }
     waiting[currpid] = FALSE;
 }
 
@@ -52,8 +54,10 @@ void mutexRelease(void)
     // Implement mutex release and select the next process
     //   to admit into its critical section.
     while ((j != currpid) && !waiting[j])
+    {
         j = (j + 1) % NPROC;
-    if (j == 1)
+    }
+    if (j == currpid)
 	lock = FALSE;
     else
 	waiting[j] = FALSE;
