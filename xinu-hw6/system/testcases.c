@@ -185,7 +185,12 @@ void testcases(void)
     kprintf("0) Test 1 producer, 1 consumer, same priority\r\n");
     kprintf("1) Test 1 producer, 1 consumer, producer 10x priority\r\n");
     kprintf("2) Test 1 producer, 4 consumers, producer 10x priority\r\n");
-    kprintf("3) Test 4 producers, 1 consumer, consumer 10x priority\r\n");
+    kprintf("3) Test 1 producer, 4 consumers, same priority\r\n");
+    kprintf("4) Test 4 producers, 1 consumer, consumer 10x priority\r\n");
+    kprintf("5) Test 4 producers, 1 consumer, same priority\r\n");
+    kprintf("6) Test 2 producers, 2 consumers, same priority, every other initializiation\r\n");
+    kprintf("7) Test 2 producers, 2 consumers, same priority, producers initialized first\r\n");
+    kprintf("8) Test 2 producers, 2 consumers, same priority, consumers initialized first\r\n");
     kprintf("===TEST BEGIN===\r\n");
 
     // TODO: Test your operating system!
@@ -241,8 +246,21 @@ void testcases(void)
 	ready(create((void *)consumer, INITSTK, 10, "consumer3", 1, &bbuff), 0);
 	ready(create((void *)consumer, INITSTK, 10, "consumer4", 1, &bbuff), 0);
 	break;
-	
+
 	case '3':
+        bbuff.bufferhead = 0;
+        bbuff.buffertail = 0;
+        bbuff.empty = semcreate(0);
+        bbuff.full = semcreate(BUFFER_SIZE);
+        bbuff.mutex = semcreate(1);
+        ready(create((void *)producer, INITSTK, 10, "producer", 1, &bbuff), 0);
+        ready(create((void *)consumer, INITSTK, 10, "consumer1", 1, &bbuff), 0);
+        ready(create((void *)consumer, INITSTK, 10, "consumer2", 1, &bbuff), 0);
+        ready(create((void *)consumer, INITSTK, 10, "consumer3", 1, &bbuff), 0);
+        ready(create((void *)consumer, INITSTK, 10, "consumer4", 1, &bbuff), 0);
+        break;
+	
+	case '4':
 	bbuff.bufferhead = 0;
 	bbuff.buffertail = 0;
 	bbuff.empty = semcreate(0);
@@ -254,6 +272,55 @@ void testcases(void)
 	ready(create((void *)producer, INITSTK, 10, "producer4", 1, &bbuff), 0);
 	ready(create((void *)consumer, INITSTK, 100, "consumer", 1, &bbuff), 0);
 	break;
+
+	case '5':
+        bbuff.bufferhead = 0;
+        bbuff.buffertail = 0;
+        bbuff.empty = semcreate(0);
+        bbuff.full = semcreate(BUFFER_SIZE);
+        bbuff.mutex = semcreate(1);
+        ready(create((void *)producer, INITSTK, 10, "producer1", 1, &bbuff), 0);
+        ready(create((void *)producer, INITSTK, 10, "producer2", 1, &bbuff), 0);
+        ready(create((void *)producer, INITSTK, 10, "producer3", 1, &bbuff), 0);
+        ready(create((void *)producer, INITSTK, 10, "producer4", 1, &bbuff), 0);
+        ready(create((void *)consumer, INITSTK, 10, "consumer", 1, &bbuff), 0);
+        break;
+	
+	case '6':
+	bbuff.bufferhead = 0;
+        bbuff.buffertail = 0;
+        bbuff.empty = semcreate(0);
+        bbuff.full = semcreate(BUFFER_SIZE);
+        bbuff.mutex = semcreate(1);
+	ready(create((void *)producer, INITSTK, 10, "producer1", 1, &bbuff), 0);
+        ready(create((void *)consumer, INITSTK, 10, "consumer1", 1, &bbuff), 0);
+	ready(create((void *)producer, INITSTK, 10, "producer2", 1, &bbuff), 0);
+        ready(create((void *)consumer, INITSTK, 10, "consumer2", 1, &bbuff), 0);
+	break;
+
+	case '7':
+        bbuff.bufferhead = 0;
+        bbuff.buffertail = 0;
+        bbuff.empty = semcreate(0);
+        bbuff.full = semcreate(BUFFER_SIZE);
+        bbuff.mutex = semcreate(1);
+        ready(create((void *)producer, INITSTK, 10, "producer1", 1, &bbuff), 0);
+	ready(create((void *)producer, INITSTK, 10, "producer2", 1, &bbuff), 0);
+        ready(create((void *)consumer, INITSTK, 10, "consumer1", 1, &bbuff), 0);
+        ready(create((void *)consumer, INITSTK, 10, "consumer2", 1, &bbuff), 0);
+        break;
+
+	case '8':
+        bbuff.bufferhead = 0;
+        bbuff.buffertail = 0;
+        bbuff.empty = semcreate(0);
+        bbuff.full = semcreate(BUFFER_SIZE);
+        bbuff.mutex = semcreate(1);
+	ready(create((void *)consumer, INITSTK, 10, "consumer1", 1, &bbuff), 0);
+        ready(create((void *)consumer, INITSTK, 10, "consumer2", 1, &bbuff), 0);
+        ready(create((void *)producer, INITSTK, 10, "producer1", 1, &bbuff), 0);
+        ready(create((void *)producer, INITSTK, 10, "producer2", 1, &bbuff), 0);
+        break;
 
    	default:
 	kprintf("\r\nNow you've done it\r\n");
