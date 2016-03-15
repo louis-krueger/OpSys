@@ -76,10 +76,8 @@ int insert_item(struct boundedbuffer *bb, buffer_item item)
 	{
 		return SYSERR;
 	}
-	mutexAcquire();
 	(*bb).buffer[(*bb).buffertail] = item;			
 	(*bb).buffertail = ((*bb).buffertail + 1 ) % BUFFER_SIZE;
-	mutexRelease();	 	
 	if(signal((*bb).empty) != OK)
 	{
 		return SYSERR;
@@ -106,10 +104,8 @@ int remove_item(struct boundedbuffer *bb, buffer_item *item)
 	{
 		return SYSERR;
 	}
-	mutexAcquire();
 	*item = (*bb).buffer[(*bb).bufferhead];
 	(*bb).bufferhead = ((*bb).bufferhead + 1) % BUFFER_SIZE;
-	mutexRelease();
 	//kprintf("removed item [%d]\r\n", *item);
 	if(signal((*bb).full) != OK)
 	{
