@@ -12,7 +12,7 @@
 /* Embedded XINU, Copyright (C) 2010, 2014.  All rights reserved. */
 
 #include <xinu.h>
-#include <debug.h>
+//#include <debug.h>
 
 typedef int buffer_item;
 #define BUFFER_SIZE 5
@@ -191,6 +191,9 @@ void testcases(void)
     kprintf("6) Test 2 producers, 2 consumers, same priority, every other initializiation\r\n");
     kprintf("7) Test 2 producers, 2 consumers, same priority, producers initialized first\r\n");
     kprintf("8) Test 2 producers, 2 consumers, same priority, consumers initialized first\r\n");
+    kprintf("9) Test 1 producer, 0 consumers\r\n");
+    kprintf("a) Test 0 producers, 1 consumer\r\n");
+    kprintf("b) Test 1 producer, 1 consumer, same priority with printing\r\n");
     kprintf("===TEST BEGIN===\r\n");
 
     // TODO: Test your operating system!
@@ -200,15 +203,15 @@ void testcases(void)
     {
 	case 'q':
         kprintf("Testing scheduling case: %c\r\n", c);
-        printqueue(readylist);
+        //printqueue(readylist);
 	ready(create((void *)printpid, INITSTK, 5, "PRINTER-D", 1, 5),  0);
-        printqueue(readylist);
+        //printqueue(readylist);
         ready(create((void *)printpid, INITSTK, 10, "PRINTER-C", 1, 5), 0);
-        printqueue(readylist);
+        //printqueue(readylist);
         ready(create((void *)printpid, INITSTK, 15, "PRINTER-B", 1, 5), 0);
-        printqueue(readylist);
+        //printqueue(readylist);
         ready(create((void *)printpid, INITSTK, 20, "PRINTER-A", 1, 5), 0);
-        printqueue(readylist);
+        //printqueue(readylist);
         kprintf("end of test scheduling\r\n");
 	break;
 	
@@ -320,6 +323,35 @@ void testcases(void)
         ready(create((void *)consumer, INITSTK, 10, "consumer2", 1, &bbuff), 0);
         ready(create((void *)producer, INITSTK, 10, "producer1", 1, &bbuff), 0);
         ready(create((void *)producer, INITSTK, 10, "producer2", 1, &bbuff), 0);
+        break;
+
+	case '9':
+        bbuff.bufferhead = 0;
+        bbuff.buffertail = 0;
+        bbuff.empty = semcreate(0);
+        bbuff.full = semcreate(BUFFER_SIZE);
+        bbuff.mutex = semcreate(1);
+        ready(create((void *)producer, INITSTK, 10, "producer1", 1, &bbuff), 0);
+        break;
+
+	case 'a':
+        bbuff.bufferhead = 0;
+        bbuff.buffertail = 0;
+        bbuff.empty = semcreate(0);
+        bbuff.full = semcreate(BUFFER_SIZE);
+        bbuff.mutex = semcreate(1);
+        ready(create((void *)consumer, INITSTK, 10, "consumer1", 1, &bbuff), 0);
+        break;
+
+	case 'b':
+	bbuff.bufferhead = 0;
+        bbuff.buffertail = 0;
+        bbuff.empty = semcreate(0);
+        bbuff.full = semcreate(BUFFER_SIZE);
+        bbuff.mutex = semcreate(1);
+        ready(create((void *)producer, INITSTK, 10, "producer", 1, &bbuff), 0);
+        ready(create((void *)consumer, INITSTK, 10, "consumer", 1, &bbuff), 0);
+	ready(create((void *)printpid, INITSTK, 10, "PRINTER-A", 1, 5), 0);
         break;
 
    	default:
