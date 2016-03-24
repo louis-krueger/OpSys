@@ -1,0 +1,21 @@
+# This Makefile contains rules to build files in the system/ directory.
+
+# Name of this component (the directory this file is stored in)
+COMP = system
+
+# Source files for this component
+
+# Important system components
+C_FILES = initialize.c platforminit.c dispatch.c kprintf.c testcases.c \
+	  create.c kill.c ready.c resched.c queue.c getstk.c \
+	  clkhandler.c clkinit.c timer.c \
+	  prioritize.c\
+	  semcreate.c semfree.c wait.c signal.c semcount.c mutex.c \
+	  testAndSet.c
+
+S_FILES = start.S halt.S irq_handler.S ctxsw.S \
+	  intutils.S
+
+# Add the files to the compile source path
+DIR = ${TOPDIR}/${COMP}
+COMP_SRC += ${S_FILES:%=${DIR}/%} ${C_FILES:%=${DIR}/%}
