@@ -19,6 +19,42 @@ void *getmem(uint nbytes)
 	//       Break off region of requested size; return pointer
 	//       to new memory region, and add any remaining chunk
 	//       back into the free list.
-
-	return (void *)SYSERR;
+	memblk*  newmem;		/* new block of memory */
+	memblk* freemem = freelist;	/* travsersal memory block */
+	memblk* prevfree;
+	int count = 0;
+	while (freemem->length < nbytes)
+	{
+		if (count == 1)
+			prevfree = freelist;
+		if (freemem->next == NULL)
+		{
+			if (count < 1)
+				count++;
+			else
+				prevfree = prevfree->next;
+			freemem* = freemem->next;
+		}
+		else
+			return (void *)SYSERR;
+	}
+	newmem = freemem;
+	newmem->next = roundmb(newmem + nbytes);
+	newmem->length = (ulong)trncmb((ulong)&(newmem->next) - (ulong)newmem);
+	if (newmem == freelist)
+	{
+		freelist.next = newmem->next;
+		freemem->length = (freemem->length) - (newmem->length);
+	}
+	else if (newmem->length < freemem->length)
+	{
+		*freemem = newmem->next;
+		prevfree->next = freemem
+	}
+	else if (newmem->length == freemem->length)
+	{
+		*freemem = freemem->next;
+		prevfree->next = *freemem;
+	}
+	return newmem;
 }
