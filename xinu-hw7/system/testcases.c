@@ -12,10 +12,19 @@
 /* Embedded XINU, Copyright (C) 2010, 2014.  All rights reserved. */
 
 #include <xinu.h>
-//#include <debug.h>
+void printFreeMem(void);
 
-typedef int buffer_item;
-#define BUFFER_SIZE 5
+void printFreeMem()
+{
+   memblk freemem = freelist;
+   while(freemem.next != NULL)
+   {
+	kprintf("freemem current location: 0x%08X\r\n", &freemem);	
+	kprintf("freemem next: 0x%08X\r\n", freemem.next);	
+	kprintf("freemem length: 0x%08X\r\n", freemem.length);	
+   }
+   //return 0;
+}
 
 ulong rand(void)
 {
@@ -37,19 +46,6 @@ syscall sleep(int time)
     return 0;
 }
 
-/* BEGIN Textbook code from Ch 5 Programming Project 3, Silberschatz p. 254 */
-
-struct boundedbuffer
-{
-    buffer_item buffer[BUFFER_SIZE];
-    int bufferhead;
-    int buffertail;
-
-    semaphore empty;
-    semaphore full;
-    semaphore mutex;
-};
-
 void printpid(int times)
 {
 	int i = 0;
@@ -61,139 +57,15 @@ void printpid(int times)
 	}
 }
 
-int insert_item(struct boundedbuffer *bb, buffer_item item)
-{
-    // TODO:
-    /* insert item into buffer
-     * return 0 if successful, otherwise
-     * return SYSERR indicating an error condition */
-	if(wait((*bb).full) != OK)
-	{
-		return SYSERR;
-	}
-
-	if (wait((*bb).mutex) != OK)
-	{
-		return SYSERR;
-	}
-	(*bb).buffer[(*bb).buffertail] = item;			
-	(*bb).buffertail = ((*bb).buffertail + 1 ) % BUFFER_SIZE;
-	if(signal((*bb).empty) != OK)
-	{
-		return SYSERR;
-	}
-	if(signal((*bb).mutex) != OK)
-	{
-		return SYSERR;
-	}
-	return 0;
-}
-
-int remove_item(struct boundedbuffer *bb, buffer_item *item)
-{
-    // TODO:
-    /* remove an object from buffer
-     * placing it in item
-     * return 0 if successful, otherwise
-     * return SYSERR indicating an error condition */
-	if(wait((*bb).empty) != OK)
-	{
-		return SYSERR;
-	}
-	if (wait((*bb).mutex) != OK)
-	{
-		return SYSERR;
-	}
-	*item = (*bb).buffer[(*bb).bufferhead];
-	(*bb).bufferhead = ((*bb).bufferhead + 1) % BUFFER_SIZE;
-	//kprintf("removed item [%d]\r\n", *item);
-	if(signal((*bb).full) != OK)
-	{
-		return SYSERR;
-	}
-	if(signal((*bb).mutex) != OK)
-	{
-		return SYSERR;
-	}
-	return 0;
-}
-
-void producer(struct boundedbuffer *bb)
-{
-    //kprintf("producer created\n\r");
-    buffer_item item;
-    enable();
-    while (1)
-    {
-        /* sleep for a random period of time */
-        sleep(rand() % 100);
-        /* generate a random number */
-        //kprintf("in producers loop\r\n");
-	item = (rand() % 10000);
-        if (insert_item(bb, item))
-		{
-		mutexAcquire();
-		kprintf("report error condition\r\n");
-        	mutexRelease();
-		}
-		else
-        {
-		mutexAcquire();
-		kprintf("producer %d produced %d\r\n", currpid, item);
-    		mutexRelease();
-		}	
-	}
-}
-
-void consumer(struct boundedbuffer *bb)
-{	
-    //kprintf("consumer created\n\r");
-    buffer_item item;
-    enable();
-    while (1)
-    {
-        /* sleep for a random period of time */
-        sleep(rand() % 100);
-        //kprintf("in consumers loop\r\n");
-		if (remove_item(bb, &item))
-    	{	
-		mutexAcquire();
-	   	kprintf("report error condition\r\n");
-    		mutexRelease();
-		} 
-	   	else
-    	{ 
-		mutexAcquire();
-	   	kprintf("consumer %d consumed %d\r\n", currpid, item);
-    		mutexRelease();
-		}
-	}
-}
-
-/* END Textbook code from Ch 5 Programming Project 3, Silberschatz p. 254 */
-
 /**
  * testcases - called after initialization completes to test things.
  */
 void testcases(void)
 {
     int c;
-    struct boundedbuffer bbuff;
-    //#undef BUFFER_SIZE	//Don't ever does this, not even in homework assignments!
-    //#define BUFFER_SIZE 10  //This was for testing the buffer logic These must be commented out 
+    
     kprintf("q) Test simple queue\r\n");
-    kprintf("0) Test 1 producer, 1 consumer, same priority\r\n");
-    kprintf("1) Test 1 producer, 1 consumer, producer 10x priority\r\n");
-    kprintf("2) Test 1 producer, 4 consumers, producer 10x priority\r\n");
-    kprintf("3) Test 1 producer, 4 consumers, same priority\r\n");
-    kprintf("4) Test 4 producers, 1 consumer, consumer 10x priority\r\n");
-    kprintf("5) Test 4 producers, 1 consumer, same priority\r\n");
-    kprintf("6) Test 2 producers, 2 consumers, same priority, every other initializiation\r\n");
-    kprintf("7) Test 2 producers, 2 consumers, same priority, producers initialized first\r\n");
-    kprintf("8) Test 2 producers, 2 consumers, same priority, consumers initialized first\r\n");
-    kprintf("9) Test 1 producer, 0 consumers\r\n");
-    kprintf("a) Test 0 producers, 1 consumer\r\n");
-    kprintf("b) Test 1 producer, 1 consumer, same priority with printing\r\n");
+    kprintf("1) Print Free memory \r\n");
     kprintf("===TEST BEGIN===\r\n");
 
     // TODO: Test your operating system!
@@ -215,145 +87,13 @@ void testcases(void)
         kprintf("end of test scheduling\r\n");
 	break;
 	
-	case '0':
-        // TODO:
-        // Initialize bbuff, and create producer and consumer processes
-	bbuff.bufferhead = 0;
-	bbuff.buffertail = 0;
-	bbuff.empty = semcreate(0);
-	bbuff.full = semcreate(BUFFER_SIZE);
-	bbuff.mutex = semcreate(1);				
-	ready(create((void *)producer, INITSTK, 10, "producer", 1, &bbuff), 0);
-	ready(create((void *)consumer, INITSTK, 10, "consumer", 1, &bbuff), 0);
-	break;
-	
 	case '1':
-	bbuff.bufferhead = 0;
-	bbuff.buffertail = 0;
-	bbuff.empty = semcreate(0);
-	bbuff.full = semcreate(BUFFER_SIZE);
-	bbuff.mutex = semcreate(1);				
-	ready(create((void *)producer, INITSTK, 100, "producer", 1, &bbuff), 0);
-	ready(create((void *)consumer, INITSTK, 10, "consumer", 1, &bbuff), 0);
+	kprintf("***Start Print***\r\n");
+	//getmem(128);
+	printFreeMem();
+	kprintf("***End Print***\r\n");
 	break;
 	
-	case '2':
-	bbuff.bufferhead = 0;
-	bbuff.buffertail = 0;
-	bbuff.empty = semcreate(0);
-	bbuff.full = semcreate(BUFFER_SIZE);
-	bbuff.mutex = semcreate(1);				
-	ready(create((void *)producer, INITSTK, 100, "producer", 1, &bbuff), 0);
-	ready(create((void *)consumer, INITSTK, 10, "consumer1", 1, &bbuff), 0);
-	ready(create((void *)consumer, INITSTK, 10, "consumer2", 1, &bbuff), 0);
-	ready(create((void *)consumer, INITSTK, 10, "consumer3", 1, &bbuff), 0);
-	ready(create((void *)consumer, INITSTK, 10, "consumer4", 1, &bbuff), 0);
-	break;
-
-	case '3':
-        bbuff.bufferhead = 0;
-        bbuff.buffertail = 0;
-        bbuff.empty = semcreate(0);
-        bbuff.full = semcreate(BUFFER_SIZE);
-        bbuff.mutex = semcreate(1);
-        ready(create((void *)producer, INITSTK, 10, "producer", 1, &bbuff), 0);
-        ready(create((void *)consumer, INITSTK, 10, "consumer1", 1, &bbuff), 0);
-        ready(create((void *)consumer, INITSTK, 10, "consumer2", 1, &bbuff), 0);
-        ready(create((void *)consumer, INITSTK, 10, "consumer3", 1, &bbuff), 0);
-        ready(create((void *)consumer, INITSTK, 10, "consumer4", 1, &bbuff), 0);
-        break;
-	
-	case '4':
-	bbuff.bufferhead = 0;
-	bbuff.buffertail = 0;
-	bbuff.empty = semcreate(0);
-	bbuff.full = semcreate(BUFFER_SIZE);
-	bbuff.mutex = semcreate(1);				
-	ready(create((void *)producer, INITSTK, 10, "producer1", 1, &bbuff), 0);
-	ready(create((void *)producer, INITSTK, 10, "producer2", 1, &bbuff), 0);
-	ready(create((void *)producer, INITSTK, 10, "producer3", 1, &bbuff), 0);
-	ready(create((void *)producer, INITSTK, 10, "producer4", 1, &bbuff), 0);
-	ready(create((void *)consumer, INITSTK, 100, "consumer", 1, &bbuff), 0);
-	break;
-
-	case '5':
-        bbuff.bufferhead = 0;
-        bbuff.buffertail = 0;
-        bbuff.empty = semcreate(0);
-        bbuff.full = semcreate(BUFFER_SIZE);
-        bbuff.mutex = semcreate(1);
-        ready(create((void *)producer, INITSTK, 10, "producer1", 1, &bbuff), 0);
-        ready(create((void *)producer, INITSTK, 10, "producer2", 1, &bbuff), 0);
-        ready(create((void *)producer, INITSTK, 10, "producer3", 1, &bbuff), 0);
-        ready(create((void *)producer, INITSTK, 10, "producer4", 1, &bbuff), 0);
-        ready(create((void *)consumer, INITSTK, 10, "consumer", 1, &bbuff), 0);
-        break;
-	
-	case '6':
-	bbuff.bufferhead = 0;
-        bbuff.buffertail = 0;
-        bbuff.empty = semcreate(0);
-        bbuff.full = semcreate(BUFFER_SIZE);
-        bbuff.mutex = semcreate(1);
-	ready(create((void *)producer, INITSTK, 10, "producer1", 1, &bbuff), 0);
-        ready(create((void *)consumer, INITSTK, 10, "consumer1", 1, &bbuff), 0);
-	ready(create((void *)producer, INITSTK, 10, "producer2", 1, &bbuff), 0);
-        ready(create((void *)consumer, INITSTK, 10, "consumer2", 1, &bbuff), 0);
-	break;
-
-	case '7':
-        bbuff.bufferhead = 0;
-        bbuff.buffertail = 0;
-        bbuff.empty = semcreate(0);
-        bbuff.full = semcreate(BUFFER_SIZE);
-        bbuff.mutex = semcreate(1);
-        ready(create((void *)producer, INITSTK, 10, "producer1", 1, &bbuff), 0);
-	ready(create((void *)producer, INITSTK, 10, "producer2", 1, &bbuff), 0);
-        ready(create((void *)consumer, INITSTK, 10, "consumer1", 1, &bbuff), 0);
-        ready(create((void *)consumer, INITSTK, 10, "consumer2", 1, &bbuff), 0);
-        break;
-
-	case '8':
-        bbuff.bufferhead = 0;
-        bbuff.buffertail = 0;
-        bbuff.empty = semcreate(0);
-        bbuff.full = semcreate(BUFFER_SIZE);
-        bbuff.mutex = semcreate(1);
-	ready(create((void *)consumer, INITSTK, 10, "consumer1", 1, &bbuff), 0);
-        ready(create((void *)consumer, INITSTK, 10, "consumer2", 1, &bbuff), 0);
-        ready(create((void *)producer, INITSTK, 10, "producer1", 1, &bbuff), 0);
-        ready(create((void *)producer, INITSTK, 10, "producer2", 1, &bbuff), 0);
-        break;
-
-	case '9':
-        bbuff.bufferhead = 0;
-        bbuff.buffertail = 0;
-        bbuff.empty = semcreate(0);
-        bbuff.full = semcreate(BUFFER_SIZE);
-        bbuff.mutex = semcreate(1);
-        ready(create((void *)producer, INITSTK, 10, "producer1", 1, &bbuff), 0);
-        break;
-
-	case 'a':
-        bbuff.bufferhead = 0;
-        bbuff.buffertail = 0;
-        bbuff.empty = semcreate(0);
-        bbuff.full = semcreate(BUFFER_SIZE);
-        bbuff.mutex = semcreate(1);
-        ready(create((void *)consumer, INITSTK, 10, "consumer1", 1, &bbuff), 0);
-        break;
-
-	case 'b':
-	bbuff.bufferhead = 0;
-        bbuff.buffertail = 0;
-        bbuff.empty = semcreate(0);
-        bbuff.full = semcreate(BUFFER_SIZE);
-        bbuff.mutex = semcreate(1);
-        ready(create((void *)producer, INITSTK, 10, "producer", 1, &bbuff), 0);
-        ready(create((void *)consumer, INITSTK, 10, "consumer", 1, &bbuff), 0);
-	ready(create((void *)printpid, INITSTK, 10, "PRINTER-A", 1, 5), 0);
-        break;
-
    	default:
 	kprintf("\r\nNow you've done it\r\n");
         break;
