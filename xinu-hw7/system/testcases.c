@@ -16,13 +16,18 @@ void printFreeMem(void);
 
 void printFreeMem()
 {
-   memblk freemem = freelist;
-   while(freemem.next != NULL)
+   memblk* freemem = freelist.next;
+   do
    {
-	kprintf("freemem current location: 0x%08X\r\n", &freemem);	
-	kprintf("freemem next: 0x%08X\r\n", freemem.next);	
-	kprintf("freemem length: 0x%08X\r\n", freemem.length);	
+	kprintf("current: 0x%08X\r\n", freemem);	
+	kprintf("\tnext: 0x%08X\r\n", freemem->next);	
+	kprintf("\tlength: 0x%08X\r\n", freemem->length);
+	if ((freemem->next != NULL) && (freemem->next != freemem))
+		freemem = freemem->next;
+	else
+		break;
    }
+   while(1);
    //return 0;
 }
 
@@ -89,11 +94,31 @@ void testcases(void)
 	
 	case '1':
 	kprintf("***Start Print***\r\n");
-	//getmem(128);
 	printFreeMem();
-	kprintf("***End Print***\r\n");
+	kprintf("*** End  Print***\r\n\n");
+
+	void* p1 = getmem(0);
+	kprintf("Requested 0 bytes.\r\n");
+
+	kprintf("***Start Print***\r\n");
+        printFreeMem();
+        kprintf("*** End  Print***\r\n\n");
+
+	void* p2 = getmem(16);
+        kprintf("Requested 16 bytes.\r\n");
+
+	kprintf("***Start Print***\r\n");
+        printFreeMem();
+        kprintf("*** End  Print***\r\n\n");
+
+	freemem(p1 , 0);
+        kprintf("Freed 0 bytes.\r\n");
+
+        kprintf("***Start Print***\r\n");
+        printFreeMem();
+        kprintf("*** End  Print***\r\n\n");
 	break;
-	
+
    	default:
 	kprintf("\r\nNow you've done it\r\n");
         break;
