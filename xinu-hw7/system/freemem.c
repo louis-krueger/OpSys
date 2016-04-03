@@ -45,7 +45,7 @@ syscall	freemem(void *pmem, uint nbytes)
 		{
 			prevfree = freemem;
                         freemem = freemem->next;
-			if (freemem->next != NULL)
+			if (freemem->next == NULL)
 			{
 				break;
 			}
