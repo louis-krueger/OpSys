@@ -9,7 +9,7 @@
 /* Embedded XINU, Copyright (C) 2009.  All rights reserved. */
 
 #include <xinu.h>
-#define NALLOC 8
+#define MINBYTES 8
 
 /**
  * Free a memory block, returning it to free list.
@@ -21,43 +21,51 @@ syscall	freemem(void *pmem, uint nbytes)
 {
 	// TODO: Insert back into free list, and compact with adjacent blocks.
 	/* START OF FREELIST RECONNECTION */
-	
 	nbytes = (uint)roundmb(nbytes);
-	kprintf("debug [freemem] pmem - 0x%08X\r\nfreelist.next - 0x%08X\r\n", pmem, (void*)freelist.next);
-
 	if (pmem < (void*)freelist.next)
 	{
-		kprintf("debug [freemem < next] pmem - 0x%08X\r\nfreelist.next - 0x%08X\r\n", pmem, (void*)freelist.next);
 		ulong temp = (ulong)freelist.next;
 		freelist.next = pmem;
-		freelist.length = nbytes + NALLOC;
+		freelist.length = nbytes + MINBYTES;
 		(freelist.next)->next = (void*) temp;
-		(freelist.next)->length = nbytes + NALLOC;
+		(freelist.next)->length = nbytes + MINBYTES;
 		return OK;
 	}
 	else
 	{
-		kprintf("debug [freemem else] pmem - 0x%08X\r\nfreelist.next - 0x%08X\r\n", pmem, (void*)freelist.next);
 		memblk* freemem = freelist.next;
 		memblk* prevfree;
-	
-		while((void*)freemem < pmem)
+        	int count = 0;
+		while ((ulong)freemem < (ulong)pmem)
 		{
-			prevfree = freemem;
-                        freemem = freemem->next;
-			if (freemem->next != NULL)
+			if (count == 1)
+                        	prevfree = freelist.next;
+               // 	if (freemem->next != NULL)
+               // 	{
+                        	else if (count < 1)
+                                	count++;
+                        	else
+                                	prevfree = prevfree->next;
+                        	freemem = freemem->next;
+               // 	}
+               /* 	else
 			{
-				break;
-			}
-		}	
+				freemem->next = pmem;
+		                memblk* newblk = pmem;
+               			newblk->length = nbytes + MINBYTES;
+                		newblk->next = NULL;
+				return OK;
+			}*/
+		}
 		prevfree->next = pmem;
 		memblk* newblk = pmem;
-                newblk->length = nbytes + NALLOC;
+                newblk->length = nbytes + MINBYTES;
 		newblk->next = freemem;
 		return OK;
 	}
 	/* END OF FREELIST RECONNECTION */
 	/* START OF COMPACTION */
+	
 	/* END OF COMPACTION */
 	return SYSERR;
 }

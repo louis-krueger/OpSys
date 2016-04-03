@@ -21,6 +21,8 @@ void *malloc(uint nbytes)
 	//       Store accounting block at head of region, including size
 	//         of request.  Return pointer to space above accounting
 	//         block.
-
+	void* p1 = getmem(nbytes);
+	*(p1 - 4) = roundmb(nybtyes) + 8;
+	return p1;
 	return (void *)SYSERR;
 }

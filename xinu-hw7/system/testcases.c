@@ -17,6 +17,8 @@ void printFreeMem(void);
 void printFreeMem()
 {
    memblk* freemem = freelist.next;
+   kprintf("\n\r\r\n ========== \r\n");
+   kprintf("***Start Print***\r\n");
    do
    {
 	kprintf("current: 0x%08X\r\n", freemem);	
@@ -28,38 +30,8 @@ void printFreeMem()
 		break;
    }
    while(1);
+   kprintf("***End Print***\r\n");
    //return 0;
-}
-
-ulong rand(void)
-{
-    ulong a = 1664525UL;
-    ulong b = 1013904223UL;
-    static ulong c = 0;
-
-    c = a * c + b;
-    return c;
-}
-
-syscall sleep(int time)
-{
-    /* Dumbest sleep ever. */
-    int i = 0, j = 0;
-    for (i = 0; i < time; i++)
-        for (j = 0; j < 1000; j++)
-            ;
-    return 0;
-}
-
-void printpid(int times)
-{
-	int i = 0;
-	//enable
-	for (i = 0; i < times; i++)
-	{
-		resched();
-		kprintf("This is process %d - [%s]\r\n", currpid, proctab[currpid].name);
-	}
 }
 
 /**
@@ -69,8 +41,10 @@ void testcases(void)
 {
     int c;
     
-    kprintf("q) Test simple queue\r\n");
-    kprintf("1) Print Free memory \r\n");
+    kprintf("1) Get-Free Test \r\n");
+    kprintf("2) Get-Free-Get Test1 \r\n");
+    kprintf("3) Get-Free-Get Test2 \r\n");
+    kprintf("4) Get-Full Get Test \r\n");
     kprintf("===TEST BEGIN===\r\n");
 
     // TODO: Test your operating system!
@@ -78,45 +52,126 @@ void testcases(void)
     c = kgetc();
     switch (c)
     {
-	case 'q':
-        kprintf("Testing scheduling case: %c\r\n", c);
-        //printqueue(readylist);
-	ready(create((void *)printpid, INITSTK, 5, "PRINTER-D", 1, 5),  0);
-        //printqueue(readylist);
-        ready(create((void *)printpid, INITSTK, 10, "PRINTER-C", 1, 5), 0);
-        //printqueue(readylist);
-        ready(create((void *)printpid, INITSTK, 15, "PRINTER-B", 1, 5), 0);
-        //printqueue(readylist);
-        ready(create((void *)printpid, INITSTK, 20, "PRINTER-A", 1, 5), 0);
-        //printqueue(readylist);
-        kprintf("end of test scheduling\r\n");
-	break;
-	
 	case '1':
-	kprintf("***Start Print***\r\n");
 	printFreeMem();
-	kprintf("*** End  Print***\r\n\n");
 
 	void* p1 = getmem(0);
 	kprintf("Requested 0 bytes.\r\n");
 
-	kprintf("***Start Print***\r\n");
         printFreeMem();
-        kprintf("*** End  Print***\r\n\n");
 
 	void* p2 = getmem(16);
         kprintf("Requested 16 bytes.\r\n");
-
-	kprintf("***Start Print***\r\n");
         printFreeMem();
-        kprintf("*** End  Print***\r\n\n");
-
-	freemem(p1 , 0);
-        kprintf("Freed 0 bytes.\r\n");
-
-        kprintf("***Start Print***\r\n");
+	
+	void* p3 = getmem(16);
+        kprintf("Requested 16 bytes.\r\n");
         printFreeMem();
-        kprintf("*** End  Print***\r\n\n");
+	
+	void* p4 = getmem(16);
+        kprintf("Requested 16 bytes.\r\n");
+        printFreeMem();
+	
+	void* p5 = getmem(16);
+        kprintf("Requested 16 bytes.\r\n");
+        printFreeMem();
+	
+	void* p6 = getmem(16);
+        kprintf("Requested 16 bytes.\r\n");
+        printFreeMem();
+
+        printFreeMem();
+
+	freemem(p1, 0);
+	kprintf("Freed 0 bytes.\r\n");
+        freemem(p3, 16);
+	kprintf("Freed 16 bytes.\r\n");
+	freemem(p5, 16);
+        kprintf("Freed 16 bytes.\r\n");
+
+        printFreeMem();
+	break;
+	
+	case '2':
+        printFreeMem();
+
+        void* p11 = getmem(0);
+        kprintf("Requested 0 bytes.\r\n");
+
+        printFreeMem();
+
+        void* p12 = getmem(16);
+        kprintf("Requested 16 bytes.\r\n");
+	
+        printFreeMem();
+
+        void* p13 = getmem(16);
+        kprintf("Requested 16 bytes.\r\n");
+        printFreeMem();
+
+        void* p14 = getmem(16);
+        kprintf("Requested 16 bytes.\r\n");
+        printFreeMem();
+        
+	freemem(p12, 16);
+        kprintf("Freed p12.\r\n");
+	
+	freemem(p14, 16);
+        kprintf("Freed p14.\r\n");
+        
+        printFreeMem();
+        void* p00 = getmem(16);
+        kprintf("Requested 16 bytes.\r\n");
+        printFreeMem();
+       	break;
+
+	case '3':
+        printFreeMem();
+
+        void* p21 = getmem(0);
+        kprintf("Requested 0 bytes.\r\n");
+
+        printFreeMem();
+
+        void* p22 = getmem(16);
+        kprintf("Requested 16 bytes.\r\n");
+
+        printFreeMem();
+
+        void* p23 = getmem(16);
+        kprintf("Requested 16 bytes.\r\n");
+        printFreeMem();
+
+        void* p24 = getmem(16);
+        kprintf("Requested 16 bytes.\r\n");
+        printFreeMem();
+
+        freemem(p22, 16);
+        kprintf("Freed p22.\r\n");
+
+        freemem(p24, 16);
+        kprintf("Freed p24.\r\n");
+
+        printFreeMem();
+        void* p20 = getmem(8);
+        kprintf("Requested 8 bytes.\r\n");
+        printFreeMem();
+        break;
+
+	
+	case '4':
+        printFreeMem();
+
+        void* p31 = getmem(0);
+        kprintf("Requested 0 bytes.\r\n");
+
+	void* p41 = getmem(roundmb(0x07FFFFF7 - (ulong)p31));
+	kprintf("Requested 0x%08X  bytes\r\n", roundmb(0x07FFFFF7 - (ulong)p31));
+
+	printFreeMem();
+	
+	freemem(p41, roundmb(0x07FFFFF7 - (ulong)p31));
+	printFreeMem();
 	break;
 
    	default:

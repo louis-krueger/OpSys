@@ -27,25 +27,20 @@ void *getmem(uint nbytes)
 	memblk* freemem = freelist.next;	/* travsersal memory block */
 	memblk* prevfree;
 	nbytes = (uint)roundmb(nbytes);		/* number of memory addresses request size will fit into */
-	int count = 0;
 	/* END OF INITILIZATIONS */
 	/* START OF FREELIST TRAVERSAL */
-	while (freemem->length < nbytes + MINBYTES)	/* traverse until we find a block large enough for nbytes */
-	{
-		if (count == 1)
-			prevfree = freelist.next;
-		if (freemem->next != NULL)
-		{
-			if (count < 1)
-				count++;
-			else
-				prevfree = prevfree->next;
-			freemem = freemem->next;
-		}
-		else
-			return (void *)SYSERR;	/* return SYSERR if we reach end of 
-						   freelist with no space for new block */
-	}
+	while(freemem->length < nbytes + MINBYTES) 	/* traverse until we find a block large enough for nbytes */
+        {
+        	if (freemem->next != NULL)
+                {
+                	prevfree = freemem;
+                        freemem = freemem->next;
+                }
+                else
+                {
+                	return (void *)SYSERR;		/* return SYSERR if we reach end of freelist with no space for new block */
+                }
+        }
 	/* END OF FREELIST TRAVERSAL */
 	/* SET UP THE NEW MEMORY BLOCK */
 	newmem = freemem;
