@@ -25,7 +25,7 @@ void *malloc(uint nbytes)
 
 	nbytes = (uint)roundmb(nbytes) + NALLOC;
 	memblk* newmem = (void *)(int)getmem(nbytes) - 8;
-	newmem->next = &(newmem->next);
+	newmem->next = (void *)&(newmem->next);
 	newmem->length = nbytes;
-	return ((int)newmem + 8);
+	return (void *)((int)newmem + 8);
 }

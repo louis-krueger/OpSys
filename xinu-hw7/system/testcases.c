@@ -74,125 +74,125 @@ void testcases(void)
 	printFreeMem();
 	free(pS1);
 	printFreeMem();
-	//free(pS2);
+	free(pS2);
         //printFreeMem();
-	//free(pS3);
+	free(pS3);
         //printFreeMem();
 	break;
     
-case '1':
+    case '1':
 	printFreeMem();
 
-	void* p1 = getmem(0);
+	void* p1 = malloc(0);
 	kprintf("Requested 0 bytes.\r\n");
 
         printFreeMem();
 
-	void* p2 = getmem(16);
+	void* p2 = malloc(16);
         kprintf("Requested 16 bytes.\r\n");
         printFreeMem();
 	
-	void* p3 = getmem(16);
+	void* p3 = malloc(16);
         kprintf("Requested 16 bytes.\r\n");
         printFreeMem();
 	
-	void* p4 = getmem(16);
+	void* p4 = malloc(16);
         kprintf("Requested 16 bytes.\r\n");
         printFreeMem();
 	
-	void* p5 = getmem(16);
+	void* p5 = malloc(16);
         kprintf("Requested 16 bytes.\r\n");
         printFreeMem();
 	
-	void* p6 = getmem(16);
+	void* p6 = malloc(16);
         kprintf("Requested 16 bytes.\r\n");
         printFreeMem();
 
         printFreeMem();
 
-	freemem(p1, 0);
+	free(p1);
 	kprintf("Freed 0 bytes.\r\n");
-        freemem(p3, 16);
+        free(p3);
 	kprintf("Freed 16 bytes.\r\n");
-	freemem(p5, 16);
+	free(p5);
         kprintf("Freed 16 bytes.\r\n");
 
         printFreeMem();
-	freemem(p2, 16);
-	freemem(p4, 16);
-	freemem(p6, 16);
+	free(p2);
+	free(p4);
+	free(p6);
 	break;
 	
     case '2':
         printFreeMem();
 
-        void* p11 = getmem(0);
+        void* p11 = malloc(0);
         kprintf("Requested 0 bytes.\r\n");
 
         printFreeMem();
 
-        void* p12 = getmem(16);
+        void* p12 = malloc(16);
         kprintf("Requested 16 bytes.\r\n");
 	
         printFreeMem();
 
-        void* p13 = getmem(16);
+        void* p13 = malloc(16);
         kprintf("Requested 16 bytes.\r\n");
         printFreeMem();
 
-        void* p14 = getmem(16);
+        void* p14 = malloc(16);
         kprintf("Requested 16 bytes.\r\n");
         printFreeMem();
         
-	freemem(p12, 16);
+	free(p12);
         kprintf("Freed p12.\r\n");
 	
-	freemem(p14, 16);
+	free(p14);
         kprintf("Freed p14.\r\n");
         
         printFreeMem();
-        void* p00 = getmem(16);
+        void* p00 = malloc(16);
         kprintf("Requested 16 bytes.\r\n");
         printFreeMem();
-       	freemem(p11, 0);
-	freemem(p13, 16);
-	freemem(p00, 16);
+       	free(p11);
+	free(p13);
+	free(p00);
 	break;
 
     case '3':
         printFreeMem();
 
-        void* p21 = getmem(0);
+        void* p21 = malloc(0);
         kprintf("Requested 0 bytes.\r\n");
 
         printFreeMem();
 
-        void* p22 = getmem(16);
+        void* p22 = malloc(16);
         kprintf("Requested 16 bytes.\r\n");
 
         printFreeMem();
 
-        void* p23 = getmem(16);
+        void* p23 = malloc(16);
         kprintf("Requested 16 bytes.\r\n");
         printFreeMem();
 
-        void* p24 = getmem(16);
+        void* p24 = malloc(16);
         kprintf("Requested 16 bytes.\r\n");
         printFreeMem();
 
-        freemem(p22, 16);
+        free(p22);
         kprintf("Freed p22.\r\n");
 
-        freemem(p24, 16);
+        free(p24);
         kprintf("Freed p24.\r\n");
 
         printFreeMem();
-        void* p20 = getmem(8);
+        void* p20 = malloc(8);
         kprintf("Requested 8 bytes.\r\n");
         printFreeMem();
-        freemem(p21, 0);
-	freemem(p23, 16);
-	freemem(p20, 8);
+        free(p21);
+	free(p23);
+	free(p20);
 	break;
 
 	
@@ -203,8 +203,8 @@ case '1':
         kprintf("Requested 8 bytes.\r\n");
 	printFreeMem();
 
-	void* p32 = malloc((uint)roundmb(0x07FFFFFF - (uint)memheap - 8));
-	kprintf("Requested 0x%08X  bytes\r\n", (uint)roundmb(0x07FFFFFF - (uint)memheap - 8));
+	void* p32 = malloc((uint)roundmb(0x07FFFFFF - (int)p31 - 24));
+	kprintf("Requested 0x%08X  bytes\r\n", (uint)roundmb(0x07FFFFFF - (int)p31 - 24));
 	printFreeMem();	
 
 	free(p32);

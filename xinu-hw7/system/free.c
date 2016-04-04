@@ -15,7 +15,7 @@
  */
 syscall	free(void *pmem)
 {
-	memblk *block = (int)pmem - 8;
+	memblk *block = (void *)(int)pmem - 8;
 
 	// TODO: Perform some sanity checks to see if pmem is feasible and
 	//       could be from a malloc() request:
@@ -24,13 +24,13 @@ syscall	free(void *pmem)
 	//       3) does accounting block mnext field point to itself?
 	//       4) is accounting block mlen field nonzero?
 	//       Call freemem() to put back into free list.
-	if ((block < memheap) || (block > platform.maxaddr))
+	if (((void *)block < (void *)memheap) || ((void *)block > (void *)platform.maxaddr))
 		return SYSERR;
 	if (block->length == 0)
 		return SYSERR;
-	if (block + block->length > platform.maxaddr)
+	if ((void *)(block + block->length) > (void *)platform.maxaddr)
 		return SYSERR;
-	if (block->next != &(block->next))
+	if ((void *)block->next != (void *)&(block->next))
 		return SYSERR;
 	return freemem(pmem, block->length);
 
