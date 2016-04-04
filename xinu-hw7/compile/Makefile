@@ -24,7 +24,12 @@ TOPDIR  := ..
 
 # Set the C compilation flags common to all Embedded Xinu platforms.
 # platformVars can add more flags if desired.
+
+# CFLAGS for gdb
+CFLAGS += -g -O0
+
 CFLAGS  :=
+
 
 # Do not perform linking until the end.
 CFLAGS  += -c

@@ -16,7 +16,7 @@ syscall kill(int pid)
 {
     irqmask im;
     pcb *ppcb;                  /* points to process control block for pid */
-
+    
     im = disable();
     if (isbadpid(pid) || (0 == pid)
         || (PRFREE == (ppcb = &proctab[pid])->state))
@@ -26,7 +26,6 @@ syscall kill(int pid)
     }
 
     ppcb = &proctab[pid];
-
     --numproc;
 
     switch (ppcb->state)
@@ -37,11 +36,11 @@ syscall kill(int pid)
 
     case PRREADY:
         remove(pid);
-
+	
     default:
         ppcb->state = PRFREE;
     }
-
+    free(ppcb->stkbase); 
     restore(im);
     return OK;
 }

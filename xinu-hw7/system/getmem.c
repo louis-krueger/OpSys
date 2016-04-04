@@ -9,7 +9,6 @@
 /* Embedded XINU, Copyright (C) 2009.  All rights reserved. */
 
 #include <xinu.h>
-#define MINBYTES 8		/* Number of bytes for the two accounting blocks */
 
 /**
  * Allocate heap storage, returning pointer to assigned memory region.
@@ -22,44 +21,55 @@ void *getmem(uint nbytes)
 	//       Break off region of requested size; return pointer
 	//       to new memory region, and add any remaining chunk
 	//       back into the free list.
+	if (freelist.next == &freelist)
+		return (void*)SYSERR;
 	/* START OF INITILIZATIONS */
-	memblk*  newmem;			/* new block of memory */
+	memblk* newmem;			/* new block of memory */
 	memblk* freemem = freelist.next;	/* travsersal memory block */
 	memblk* prevfree;
-	nbytes = (uint)roundmb(nbytes);		/* number of memory addresses request size will fit into */
+	nbytes = (uint)roundmb(nbytes);
 	/* END OF INITILIZATIONS */
 	/* START OF FREELIST TRAVERSAL */
-	while(freemem->length < nbytes + MINBYTES) 	/* traverse until we find a block large enough for nbytes */
+	while(freemem->length < nbytes) 	/* traverse until we find a block large enough for nbytes */
         {
         	if (freemem->next != NULL)
                 {
                 	prevfree = freemem;
                         freemem = freemem->next;
                 }
-                else
-                {
-                	return (void *)SYSERR;		/* return SYSERR if we reach end of freelist with no space for new block */
-                }
+                else if (freemem->length != nbytes)
+                	return (void *)SYSERR;	//consider returning NULL????????/* return SYSERR if we reach end of freelist with no space for new block */
+		else
+			break;
+                
         }
 	/* END OF FREELIST TRAVERSAL */
 	/* SET UP THE NEW MEMORY BLOCK */
 	newmem = freemem;
-//	newmem->next = (int)newmem + (nbytes + MINBYTES);
-	newmem->length = nbytes + MINBYTES;
+	newmem->length = nbytes;
 	/* END OF SETTING UP NEW MEMORY BLOCK */
 	if (newmem == freelist.next)
 	{
 		ulong temp = (ulong)(freelist.next)->next;
-        	newmem->next = (void *)((int)newmem + (nbytes + MINBYTES));
-		freelist.next = newmem->next;
-		freelist.length = (freelist.length) - (newmem->length);
-		(freelist.next)->next = (void *)temp;
-		(freelist.next)->length = freelist.length;
+		if (((int)newmem + nbytes) > 0x07FFFFFF)
+		{
+			newmem->next = NULL;
+			freelist.next = &freelist;
+			freelist.length = NULL;
+		}
+        	else
+		{
+			newmem->next = (void *)((int)newmem + (nbytes));
+			freelist.next = newmem->next;
+			freelist.length = (freelist.length) - (newmem->length);
+        	        (freelist.next)->next = (void *)temp;
+	                (freelist.next)->length = freelist.length;
+		}	
 	}
 	else if (newmem->length < freemem->length)
 	{
 		ulong temp = (ulong)freemem->next;
-		newmem->next = (void *)((int)newmem + (nbytes + MINBYTES));
+		newmem->next = (void *)((int)newmem + (nbytes));
 		freemem = newmem->next;
 		freemem->next = (void *)temp;
 		freemem->length = (freemem->length - newmem->length);
@@ -68,7 +78,7 @@ void *getmem(uint nbytes)
 	else if (newmem->length == freemem->length)
 	{
 		freemem = freemem->next;
-                newmem->next = (void *)((int)newmem + (nbytes + MINBYTES));
+                newmem->next = (void *)((int)newmem + (nbytes));
 		prevfree->next = freemem;
 	}
 	return newmem;

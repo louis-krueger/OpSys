@@ -31,12 +31,12 @@ void printFreeMem()
 		break;
    }
    while(1);
-   kprintf("\tcurrent is the tail of heap, calcuatled end [0x07ffffff] - 0x%08X\r\n", (uint)freemem + (uint)freemem->length - 1);
+   kprintf("\tcurrent is the tail of heap, calcuatled end [0x07ffffff] - 0x%08X\r\n", (uint)freemem + (uint)freemem->length);
    kprintf("***End Print***\r\n");
 }
 void *getMemForTest(uint nbytes)
 {
-	void* T = getmem(nbytes);
+	void* T = malloc(nbytes);
 	kprintf("Requested %d bytes.\r\n", nbytes);
 	return T;
 }
@@ -48,8 +48,9 @@ void *getMemForTest(uint nbytes)
 void testcases(void)
 {
     int c;
- //   void* pS1;
-  //  void* pS2;    
+    void* pS1;
+    void* pS2;
+    void* pS3;    
 
     kprintf("s) Very simple test case get two chunks free first\r\n");
     kprintf("1) Get-Free Test \r\n");
@@ -65,16 +66,18 @@ void testcases(void)
     {
     case 's':
 	printFreeMem();
-
-//	pS1 = malloc(16);
+	pS1 = malloc(16);
         printFreeMem();
-//	pS2 = malloc(0);
-//	printFreeMem();
-
-//	freemem(pS2, 0);
-//	kprintf("Freed 8 bytes.\r\n");
-//        printFreeMem();
-	//freemem(pS1, 0);
+	pS2 = malloc(32);
+	printFreeMem();
+	pS3 = malloc(64);
+	printFreeMem();
+	free(pS1);
+	printFreeMem();
+	//free(pS2);
+        //printFreeMem();
+	//free(pS3);
+        //printFreeMem();
 	break;
     
 case '1':
@@ -196,15 +199,19 @@ case '1':
     case '4':
         printFreeMem();
 
-        void* p31 = getmem(0);
-        kprintf("Requested 0 bytes.\r\n");
-
-	void* p32 = getmem(roundmb(0x07FFFFF7));
-	kprintf("Requested 0x%08X  bytes\r\n", roundmb(0x07FFFFF7));
-	printFreeMem();	
-	freemem(p32, roundmb(0x07FFFFF7));
+        void* p31 = malloc(8);
+        kprintf("Requested 8 bytes.\r\n");
 	printFreeMem();
-	freemem(p31, 0);
+
+	void* p32 = malloc((uint)roundmb(0x07FFFFFF - (uint)memheap - 8));
+	kprintf("Requested 0x%08X  bytes\r\n", (uint)roundmb(0x07FFFFFF - (uint)memheap - 8));
+	printFreeMem();	
+
+	free(p32);
+	printFreeMem();
+
+	free(p31);
+	printFreeMem();
 	break;
 
     case '5':
@@ -232,27 +239,28 @@ case '1':
 	void* p419 = getMemForTest(4096);
 
 	printFreeMem();
-	freemem(p400, 8);
-	freemem(p402, 16);
-	freemem(p404, 32);
-	freemem(p406, 64);
-	freemem(p408, 128);
-	freemem(p410, 256);
-	freemem(p412, 512);
-	freemem(p414, 1024);
-	freemem(p416, 2048);
-	freemem(p418, 4096);
+	free(p400);
+	free(p402);
+	free(p404);
+	free(p406);
+	free(p408);
+	free(p410);
+	free(p412);
+	free(p414);
+	free(p416);
+	free(p418);
 	printFreeMem();
-	freemem(p401, 8);
-	freemem(p403, 16);
-	freemem(p405, 32);
-	freemem(p407, 64);
-	freemem(p409, 128);
-	freemem(p411, 256);
-	freemem(p413, 512);
-	freemem(p415, 1024);
-	freemem(p417, 2048);
-	freemem(p419, 4096);	
+	free(p401);
+	free(p403);
+	free(p405);
+	free(p407);
+	free(p409);
+	free(p411);
+	free(p413);
+	free(p415);
+	free(p417);
+	free(p419);	
+	printFreeMem();
 	break;
     
     default:

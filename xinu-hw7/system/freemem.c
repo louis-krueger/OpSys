@@ -9,7 +9,6 @@
 /* Embedded XINU, Copyright (C) 2009.  All rights reserved. */
 
 #include <xinu.h>
-#define NALLOC 8
 
 /**
  * Free a memory block, returning it to free list.
@@ -21,28 +20,31 @@ syscall	freemem(void *pmem, uint nbytes)
 {
 	// TODO: Insert back into free list, and compact with adjacent blocks.
 	/* START OF FREELIST RECONNECTION */
-	
 	nbytes = (uint)roundmb(nbytes);
-	kprintf("debug [freemem] pmem - 0x%08X\r\nfreelist.next - 0x%08X\r\n", pmem, (void*)freelist.next);
-
+	memblk* freemem = freelist.next;
+        memblk* prevfree;
 	if (pmem < (void*)freelist.next)
 	{
-		kprintf("debug [freemem < next] pmem - 0x%08X\r\nfreelist.next - 0x%08X\r\n", pmem, (void*)freelist.next);
 		ulong temp = (ulong)freelist.next;
 		freelist.next = pmem;
-		freelist.length = nbytes + NALLOC;
+		freelist.length = nbytes;
 		(freelist.next)->next = (void*) temp;
-		(freelist.next)->length = nbytes + NALLOC;
-		return OK;
+		(freelist.next)->length = nbytes;
+		prevfree = freelist.next;
+		freemem = prevfree->next;
+	}
+	else if (freelist.next == &freelist)
+	{
+                memblk* newblk = pmem;
+                newblk->length = nbytes;
+                newblk->next = NULL;
+                freelist.next = newblk;
 	}
 	else
 	{
-		kprintf("debug [freemem else] pmem - 0x%08X\r\nfreelist.next - 0x%08X\r\n", pmem, (void*)freelist.next);
-		memblk* freemem = freelist.next;
-		memblk* prevfree;
-	
 		while((void*)freemem < pmem)
 		{
+			//kprintf("Nasty print statement.\r\n");
 			prevfree = freemem;
                         freemem = freemem->next;
 			if (freemem->next == NULL)
@@ -52,12 +54,24 @@ syscall	freemem(void *pmem, uint nbytes)
 		}	
 		prevfree->next = pmem;
 		memblk* newblk = pmem;
-                newblk->length = nbytes + NALLOC;
+                newblk->length = nbytes;
 		newblk->next = freemem;
-		return OK;
+		freemem = prevfree->next;
 	}
 	/* END OF FREELIST RECONNECTION */
 	/* START OF COMPACTION */
+	//kprintf("Nasty print STATEMENT enter.\r\n");
+	if (((int)freemem + freemem->length) == ((int)freemem->next))
+        {
+		freemem->length = freemem->length + (freemem->next)->length;
+                freemem->next = (freemem->next)->next;
+        }
+	if (((int)prevfree + prevfree->length) == ((int)freemem))
+	{
+		prevfree->next = freemem->next;
+        	prevfree->length = prevfree->length + freemem->length;
+	}
+	//kprintf("Nasty print STATEMENT exit.\r\n");
 	/* END OF COMPACTION */
-	return SYSERR;
+	return OK;
 }

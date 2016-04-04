@@ -39,7 +39,7 @@ syscall create(void *funcaddr, ulong ssize, ulong priority, char *name, ulong na
         ssize = MINSTK;
     ssize = (ulong)(ssize + 3) & 0xFFFFFFFC;
     /* round up to even boundary    */
-    saddr = (ulong *)getstk(ssize);     /* allocate new stack and pid   */
+    saddr = (ulong *)malloc(ssize) + ssize;     /* allocate new stack and pid   */
 #ifdef DEBUG
 	if (DEBUG > 1)
 	{

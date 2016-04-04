@@ -7,8 +7,7 @@
 /* Embedded XINU, Copyright (C) 2009.  All rights reserved. */
 
 #include <xinu.h>
-static memblk base;
-static memblk* freep = NULL;
+#define NALLOC 8              /* Number of bytes for the two accounting blocks */
 
 /**
  * Allocate heap storage plus accounting block, returning pointer to
@@ -23,33 +22,10 @@ void *malloc(uint nbytes)
 	//       Store accounting block at head of region, including size
 	//         of request.  Return pointer to space above accounting
 	//         block.
-	
-	memblk *p, *prevp;
-	unsigned nunits;
-	
-	nunits = (nbytes + sizeof(memblk)-1)/sizeof(memblk) + 1;
-	if ((prevp = freep) == NULL)
-	{
-		base->next = freep = prevp = &base;
-		base->length = 0;
-	}
-	for (p = prev->next; ; prevp = p, p = p->next)
-	{
-		if (p->length >= munits)
-		{
-			if (p->length == nunits)
-				prev->next = p->next;
-			else {
-				p->length -= nunits;
-				p += p.length;
-				p->length = nunits;
-			}
-			freep = prevp;
-			return (void*)(p+1);
-		}
-		if (p == freep)
-			if ((p = getmem(nunits)) == NULL)
-				return NULL;
-	}
 
+	nbytes = (uint)roundmb(nbytes) + NALLOC;
+	memblk* newmem = (void *)(int)getmem(nbytes) - 8;
+	newmem->next = &(newmem->next);
+	newmem->length = nbytes;
+	return ((int)newmem + 8);
 }

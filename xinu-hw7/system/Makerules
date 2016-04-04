@@ -7,12 +7,12 @@ COMP = system
 
 # Important system components
 C_FILES = initialize.c platforminit.c dispatch.c kprintf.c testcases.c \
-	  create.c kill.c ready.c resched.c queue.c getstk.c \
+	  create.c kill.c ready.c resched.c queue.c \
 	  clkhandler.c clkinit.c timer.c \
 	  prioritize.c \
 	  semcreate.c semfree.c wait.c signal.c semcount.c mutex.c \
 	  testAndSet.c \
-	  getmem.c freemem.c
+	  getmem.c freemem.c malloc.c free.c
 
 S_FILES = start.S halt.S irq_handler.S ctxsw.S \
 	  intutils.S
