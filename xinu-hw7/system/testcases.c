@@ -45,8 +45,9 @@ void *getMemForTest(uint nbytes)
 }
 syscall freeMemForTest(void* p)
 {
-	kprintf("Requested free %08X.\r\n", p);	
-	return free(p);
+	kprintf("Requested free 0x%08X.\r\n", p);	
+	if (free(p) == SYSERR)
+		kprintf("Failed to free.\r\n");
 }
 
 /**

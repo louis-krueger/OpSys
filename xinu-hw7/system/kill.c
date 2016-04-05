@@ -40,7 +40,7 @@ syscall kill(int pid)
     default:
         ppcb->state = PRFREE;
     }
-    free(ppcb->stkbase); 
+    freemem(ppcb->stkbase, ppcb->stklen); 
     restore(im);
     return OK;
 }

@@ -24,9 +24,9 @@ void *getmem(uint nbytes)
 	if (freelist.next == &freelist)
 		return (void*)SYSERR;
 	/* START OF INITILIZATIONS */
-	memblk* newmem;			/* new block of memory */
+	memblk* newmem;				/* new block of memory */
 	memblk* freemem = freelist.next;	/* travsersal memory block */
-	memblk* prevfree;
+	memblk* prevfree;			/* 2nd traversal memory block */
 	nbytes = (uint)roundmb(nbytes);
 	/* END OF INITILIZATIONS */
 	/* START OF FREELIST TRAVERSAL */
@@ -37,8 +37,8 @@ void *getmem(uint nbytes)
                 	prevfree = freemem;
                         freemem = freemem->next;
                 }
-                else if (freemem->length != nbytes)
-                	return (void *)SYSERR;	//consider returning NULL????????/* return SYSERR if we reach end of freelist with no space for new block */
+                else if (freemem->length != nbytes)	/* if we are at the last block in free and the new block wont fit return SYSERR*/
+                	return (void *)SYSERR;
 		else
 			break;
                 
@@ -48,7 +48,7 @@ void *getmem(uint nbytes)
 	newmem = freemem;
 	newmem->length = nbytes;
 	/* END OF SETTING UP NEW MEMORY BLOCK */
-	if (newmem == freelist.next)
+	if (newmem == freelist.next)			/* if the block we find is at the beggining of freelist */
 	{
 		ulong temp = (ulong)(freelist.next)->next;
 		if (((int)newmem + nbytes) >=(int)platform.maxaddr)
@@ -66,7 +66,7 @@ void *getmem(uint nbytes)
 	                (freelist.next)->length = freelist.length;
 		}	
 	}
-	else if (newmem->length < freemem->length)
+	else if (newmem->length < freemem->length)	/* if the block we find is in the middle and breaks up freelist */
 	{
 		ulong temp = (ulong)freemem->next;
 		newmem->next = (void *)((int)newmem + (nbytes));
@@ -75,7 +75,7 @@ void *getmem(uint nbytes)
 		freemem->length = (freemem->length - newmem->length);
 		prevfree->next = freemem;
 	}
-	else if (newmem->length == freemem->length)
+	else if (newmem->length == freemem->length)	/* if the block we find is in the middle and fits perfectly */
 	{
 		freemem = freemem->next;
                 newmem->next = (void *)((int)newmem + (nbytes));

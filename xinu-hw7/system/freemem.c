@@ -23,7 +23,7 @@ syscall	freemem(void *pmem, uint nbytes)
 	nbytes = (uint)roundmb(nbytes);
 	memblk* freemem = freelist.next;
         memblk* prevfree;
-	if (pmem < (void*)freelist.next)
+	if (pmem < (void*)freelist.next)		/* if our pointer is behind freelist's start */
 	{
 		ulong temp = (ulong)freelist.next;
 		freelist.next = pmem;
@@ -33,7 +33,7 @@ syscall	freemem(void *pmem, uint nbytes)
 		prevfree = freelist.next;
 		freemem = prevfree->next;
 	}
-	else if (freelist.next == &freelist)
+	else if (freelist.next == &freelist)		/* error check if freelist is full */
 	{
                 memblk* newblk = pmem;
                 newblk->length = nbytes;
@@ -42,7 +42,7 @@ syscall	freemem(void *pmem, uint nbytes)
 	}
 	else
 	{
-		while((void*)freemem < pmem)
+		while((void*)freemem < pmem)		/* traverse until we find the block ahead and behind */
 		{
 			prevfree = freemem;
                         freemem = freemem->next;
@@ -59,17 +59,17 @@ syscall	freemem(void *pmem, uint nbytes)
 	}
 	/* END OF FREELIST RECONNECTION */
 	/* START OF COMPACTION */
-	if (((int)freemem + freemem->length) == ((int)freemem->next))
+	if (((int)freemem + freemem->length) == ((int)freemem->next))			/* if freed block can be compacted forward */
         {
 		freemem->length = freemem->length + (freemem->next)->length;
                 freemem->next = (freemem->next)->next;
         }
-	if (((int)prevfree + prevfree->length) == ((int)freemem))
+	if (((int)prevfree + prevfree->length) == ((int)freemem))			/* if freed block can be compacted backward */
 	{
 		prevfree->next = freemem->next;
         	prevfree->length = prevfree->length + freemem->length;
 	}
-	if (((int)freelist.next + freelist.length) == (int)freemem)
+	if (((int)freelist.next + freelist.length) == (int)freemem)			/* if freelist needs to be updated with compaction */
         {
                 (freelist.next)->next = freemem->next;
                 freelist.length = freelist.length + freemem->length;

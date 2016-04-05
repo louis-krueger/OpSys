@@ -26,7 +26,7 @@ void *malloc(uint nbytes)
 	memblk* newmem = (void *)(int)getmem(nbytes);
 	if ((int)newmem == SYSERR)
 		return (void *)SYSERR;
-	newmem->next = (void *)&(newmem->next);
+	newmem->next = (void *)&(newmem->next);		/* set up accounting data */
 	newmem->length = nbytes;
-	return (void *)((int)newmem + 8);
+	return (void *)((int)newmem + 8);		/* move pointer above accounting information */
 }
