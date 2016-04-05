@@ -12,13 +12,14 @@
 /* Embedded XINU, Copyright (C) 2010, 2014.  All rights reserved. */
 
 #include <xinu.h>
-void *getMemForTest(uint nbytes);
 void printFreeMem(void);
+void *getMemForTest(uint nbytes);
+syscall freeMemForTest(void*);
 
 void printFreeMem()
 {
    memblk* freemem = freelist.next;
-   kprintf("\n\r\r\n ========== \r\n");
+   kprintf(" ========== \r\n");
    kprintf("***Start Print***\r\n");
    do
    {
@@ -32,15 +33,21 @@ void printFreeMem()
    }
    while(1);
    kprintf("\tcurrent is the tail of heap, calcuatled end [0x07ffffff] - 0x%08X\r\n", (uint)freemem + (uint)freemem->length);
-   kprintf("***End Print***\r\n");
+   kprintf("***End Print***\r\n\r\n");
 }
 void *getMemForTest(uint nbytes)
 {
-	void* T = malloc(nbytes);
 	kprintf("Requested %d bytes.\r\n", nbytes);
+	void* T = malloc(nbytes);
+	if (T == (void *)SYSERR)
+		kprintf("Not enough space in freelist.\r\n");
 	return T;
 }
-
+syscall freeMemForTest(void* p)
+{
+	kprintf("Requested free %08X.\r\n", p);	
+	return free(p);
+}
 
 /**
  * testcases - called after initialization completes to test things.
@@ -48,223 +55,197 @@ void *getMemForTest(uint nbytes)
 void testcases(void)
 {
     int c;
-    void* pS1;
-    void* pS2;
-    void* pS3;    
+    void* p01;
+    void* p02;
+    void* p03;
+    void* p04;
+    void* p05;
+    void* p06;
+    void* p07;
+    void* p08;
+    void* p09;
+    void* p10;
+    void* p11;
+    void* p12;
+    void* p13;
+    void* p14;
+    void* p15;
+    void* p16;
+    void* p17;
+    void* p18;
+    void* p19;
+    void* p20;
 
-    kprintf("s) Very simple test case get two chunks free first\r\n");
+    kprintf("0) Simple Test\r\n");
     kprintf("1) Get-Free Test \r\n");
     kprintf("2) Get-Free-Get Test1 \r\n");
     kprintf("3) Get-Free-Get Test2 \r\n");
     kprintf("4) Get-Full Get Test \r\n");
-    kprintf("5) 20 request of differing sizes, 10 freed expected addresses and size, see comment in git\r\n");
+    kprintf("5) Hole in Freelist Test\r\n");
+    kprintf("6) Simple Hole Test\r\n");
     kprintf("===TEST BEGIN===\r\n");
     // TODO: Test your operating system!
 	
     c = kgetc();
     switch (c)
     {
-    case 's':
+    case '0':
 	printFreeMem();
-	pS1 = malloc(16);
+	p01 = getMemForTest(16);
         printFreeMem();
-	pS2 = malloc(32);
+	p02 = getMemForTest(32);
 	printFreeMem();
-	pS3 = malloc(64);
+	p03 = getMemForTest(64);
 	printFreeMem();
-	free(pS1);
+	freeMemForTest(p01);
 	printFreeMem();
-	free(pS2);
-        //printFreeMem();
-	free(pS3);
-        //printFreeMem();
+	freeMemForTest(p02);
+        printFreeMem();
+	freeMemForTest(p03);
+        printFreeMem();
 	break;
     
     case '1':
 	printFreeMem();
-
-	void* p1 = malloc(0);
-	kprintf("Requested 0 bytes.\r\n");
-
+	p01 = getMemForTest(0);
         printFreeMem();
-
-	void* p2 = malloc(16);
-        kprintf("Requested 16 bytes.\r\n");
+	p02 = getMemForTest(16);
         printFreeMem();
-	
-	void* p3 = malloc(16);
-        kprintf("Requested 16 bytes.\r\n");
+	p03 = getMemForTest(16);
         printFreeMem();
-	
-	void* p4 = malloc(16);
-        kprintf("Requested 16 bytes.\r\n");
+	p04 = getMemForTest(16);
         printFreeMem();
-	
-	void* p5 = malloc(16);
-        kprintf("Requested 16 bytes.\r\n");
+	p05 = getMemForTest(16);
         printFreeMem();
-	
-	void* p6 = malloc(16);
-        kprintf("Requested 16 bytes.\r\n");
+	p06 = getMemForTest(16);
         printFreeMem();
-
+	freeMemForTest(p01);
+        freeMemForTest(p03);
+	freeMemForTest(p05);
         printFreeMem();
-
-	free(p1);
-	kprintf("Freed 0 bytes.\r\n");
-        free(p3);
-	kprintf("Freed 16 bytes.\r\n");
-	free(p5);
-        kprintf("Freed 16 bytes.\r\n");
-
-        printFreeMem();
-	free(p2);
-	free(p4);
-	free(p6);
+	freeMemForTest(p02);
+	freeMemForTest(p04);
+	freeMemForTest(p06);
+	printFreeMem();
 	break;
 	
     case '2':
         printFreeMem();
-
-        void* p11 = malloc(0);
-        kprintf("Requested 0 bytes.\r\n");
-
+        p01 = getMemForTest(0);
         printFreeMem();
-
-        void* p12 = malloc(16);
-        kprintf("Requested 16 bytes.\r\n");
-	
+        p02 = getMemForTest(16);
         printFreeMem();
-
-        void* p13 = malloc(16);
-        kprintf("Requested 16 bytes.\r\n");
+        p03 = getMemForTest(16);
         printFreeMem();
-
-        void* p14 = malloc(16);
-        kprintf("Requested 16 bytes.\r\n");
+        p04 = getMemForTest(16);
         printFreeMem();
-        
-	free(p12);
-        kprintf("Freed p12.\r\n");
-	
-	free(p14);
-        kprintf("Freed p14.\r\n");
-        
+	freeMemForTest(p02);
+	freeMemForTest(p04);
         printFreeMem();
-        void* p00 = malloc(16);
-        kprintf("Requested 16 bytes.\r\n");
+        p05 = getMemForTest(16);
         printFreeMem();
-       	free(p11);
-	free(p13);
-	free(p00);
+       	freeMemForTest(p01);
+	freeMemForTest(p03);
+	freeMemForTest(p05);
+	printFreeMem();
 	break;
 
     case '3':
         printFreeMem();
-
-        void* p21 = malloc(0);
-        kprintf("Requested 0 bytes.\r\n");
-
+        p01 = getMemForTest(0);
         printFreeMem();
-
-        void* p22 = malloc(16);
-        kprintf("Requested 16 bytes.\r\n");
-
+        p02 = getMemForTest(16);
         printFreeMem();
-
-        void* p23 = malloc(16);
-        kprintf("Requested 16 bytes.\r\n");
+        p03 = getMemForTest(16);
         printFreeMem();
-
-        void* p24 = malloc(16);
-        kprintf("Requested 16 bytes.\r\n");
+        p04 = getMemForTest(16);
         printFreeMem();
-
-        free(p22);
-        kprintf("Freed p22.\r\n");
-
-        free(p24);
-        kprintf("Freed p24.\r\n");
-
+        freeMemForTest(p02);
+        freeMemForTest(p04);
         printFreeMem();
-        void* p20 = malloc(8);
-        kprintf("Requested 8 bytes.\r\n");
+        p05 = getMemForTest(8);
         printFreeMem();
-        free(p21);
-	free(p23);
-	free(p20);
+        freeMemForTest(p01);
+	freeMemForTest(p03);
+	freeMemForTest(p05);
+	printFreeMem();
 	break;
 
 	
     case '4':
         printFreeMem();
-
-        void* p31 = malloc(8);
-        kprintf("Requested 8 bytes.\r\n");
+        p01 = getMemForTest(8);
 	printFreeMem();
-
-	void* p32 = malloc((uint)roundmb(0x07FFFFFF - (int)p31 - 24));
-	kprintf("Requested 0x%08X  bytes\r\n", (uint)roundmb(0x07FFFFFF - (int)p31 - 24));
+	p02 = getMemForTest((uint)roundmb(0x07FFFFEF - (int)p01));
 	printFreeMem();	
-
-	free(p32);
+	freeMemForTest(p02);
 	printFreeMem();
-
-	free(p31);
+	freeMemForTest(p01);
 	printFreeMem();
 	break;
 
     case '5':
         printFreeMem();
-	
-	void* p400 = getMemForTest(8);
-	void* p401 = getMemForTest(8);
-	void* p402 = getMemForTest(16);
-	void* p403 = getMemForTest(16);
-	void* p404 = getMemForTest(32);
-	void* p405 = getMemForTest(32);
-	void* p406 = getMemForTest(64);
-	void* p407 = getMemForTest(64);
-	void* p408 = getMemForTest(128);
-	void* p409 = getMemForTest(128);
-	void* p410 = getMemForTest(256);
-	void* p411 = getMemForTest(256);
-	void* p412 = getMemForTest(512);
-	void* p413 = getMemForTest(512);
-	void* p414 = getMemForTest(1024);
-	void* p415 = getMemForTest(1024);
-	void* p416 = getMemForTest(2048);
-	void* p417 = getMemForTest(2048);
-	void* p418 = getMemForTest(4096);
-	void* p419 = getMemForTest(4096);
+	p20 = getMemForTest(8);
+	p01 = getMemForTest(8);
+	p02 = getMemForTest(16);
+	p03 = getMemForTest(16);
+	p04 = getMemForTest(32);
+	p05 = getMemForTest(32);
+	p06 = getMemForTest(64);
+	p07 = getMemForTest(64);
+	p08 = getMemForTest(128);
+	p09 = getMemForTest(128);
+	p10 = getMemForTest(256);
+	p11 = getMemForTest(256);
+	p12 = getMemForTest(512);
+	p13 = getMemForTest(512);
+	p14 = getMemForTest(1024);
+	p15 = getMemForTest(1024);
+	p16 = getMemForTest(2048);
+	p17 = getMemForTest(2048);
+	p18 = getMemForTest(4096);
+	p19 = getMemForTest(4096);
 
 	printFreeMem();
-	free(p400);
-	free(p402);
-	free(p404);
-	free(p406);
-	free(p408);
-	free(p410);
-	free(p412);
-	free(p414);
-	free(p416);
-	free(p418);
+	freeMemForTest(p20);
+	freeMemForTest(p02);
+	freeMemForTest(p04);
+	freeMemForTest(p06);
+	freeMemForTest(p08);
+	freeMemForTest(p10);
+	freeMemForTest(p12);
+	freeMemForTest(p14);
+	freeMemForTest(p16);
+	freeMemForTest(p18);
 	printFreeMem();
-	free(p401);
-	free(p403);
-	free(p405);
-	free(p407);
-	free(p409);
-	free(p411);
-	free(p413);
-	free(p415);
-	free(p417);
-	free(p419);	
+	freeMemForTest(p01);
+	freeMemForTest(p03);
+	freeMemForTest(p05);
+	freeMemForTest(p07);
+	freeMemForTest(p09);
+	freeMemForTest(p11);
+	freeMemForTest(p13);
+	freeMemForTest(p15);
+	freeMemForTest(p17);
+	freeMemForTest(p19);	
 	printFreeMem();
 	break;
     
+    case '6':
+	printFreeMem();
+	p01 = getMemForTest(8);
+	printFreeMem();
+	p02 = getMemForTest(8);
+	printFreeMem();
+	freeMemForTest(p01);
+	printFreeMem();
+	freeMemForTest(p02);
+	printFreeMem();
+	break;
+
     default:
-	kprintf("\r\nNow you've done it\r\n");
+	kprintf("\r\nNow you've done it.\r\n");
         break;
     }
 

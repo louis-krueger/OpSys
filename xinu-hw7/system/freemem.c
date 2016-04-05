@@ -44,7 +44,6 @@ syscall	freemem(void *pmem, uint nbytes)
 	{
 		while((void*)freemem < pmem)
 		{
-			//kprintf("Nasty print statement.\r\n");
 			prevfree = freemem;
                         freemem = freemem->next;
 			if (freemem->next == NULL)
@@ -60,7 +59,6 @@ syscall	freemem(void *pmem, uint nbytes)
 	}
 	/* END OF FREELIST RECONNECTION */
 	/* START OF COMPACTION */
-	//kprintf("Nasty print STATEMENT enter.\r\n");
 	if (((int)freemem + freemem->length) == ((int)freemem->next))
         {
 		freemem->length = freemem->length + (freemem->next)->length;
@@ -71,7 +69,6 @@ syscall	freemem(void *pmem, uint nbytes)
 		prevfree->next = freemem->next;
         	prevfree->length = prevfree->length + freemem->length;
 	}
-	//kprintf("Nasty print STATEMENT exit.\r\n");
 	/* END OF COMPACTION */
 	return OK;
 }

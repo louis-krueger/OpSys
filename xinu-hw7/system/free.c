@@ -15,8 +15,8 @@
  */
 syscall	free(void *pmem)
 {
+	
 	memblk *block = (void *)(int)pmem - 8;
-
 	// TODO: Perform some sanity checks to see if pmem is feasible and
 	//       could be from a malloc() request:
 	//       1) is ptr within heap region of memory?
@@ -28,38 +28,10 @@ syscall	free(void *pmem)
 		return SYSERR;
 	if (block->length == 0)
 		return SYSERR;
-	if ((void *)(block + block->length) > (void *)platform.maxaddr)
+	if ((void *)((int)block + block->length) > (void *)platform.maxaddr)
 		return SYSERR;
 	if ((void *)block->next != (void *)&(block->next))
 		return SYSERR;
-	return freemem(pmem, block->length);
-
-/*	memblk *bp, *p;
-	
-	bp = (memblk*)pmem - 1;
-	for (p = memheap; !(bp > p && bp < p->next); p = p->next)
-		if ( p >= p->next && (bp > p || bp < p->next))
-			break;
-	
-	if (bp + bp->length == p->next)
-	{
-		bp->length += p->next->length;
-		bp->next = p->next->next;
-	}	 
-	else
-	{
-		bp->next = p->next;
-	}
-	if (p + p->length == bp)
-	{
-		p->length += bp->length;
-		p->next = bp->next;
-	}
-	else
-	{
-		p->next = bp;
-	}
-	memheap = p;
-*/
+	return freemem(block, block->length);
 }
 

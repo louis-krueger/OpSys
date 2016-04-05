@@ -22,9 +22,10 @@ void *malloc(uint nbytes)
 	//       Store accounting block at head of region, including size
 	//         of request.  Return pointer to space above accounting
 	//         block.
-
 	nbytes = (uint)roundmb(nbytes) + NALLOC;
-	memblk* newmem = (void *)(int)getmem(nbytes) - 8;
+	memblk* newmem = (void *)(int)getmem(nbytes);
+	if ((int)newmem == SYSERR)
+		return (void *)SYSERR;
 	newmem->next = (void *)&(newmem->next);
 	newmem->length = nbytes;
 	return (void *)((int)newmem + 8);
