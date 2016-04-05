@@ -69,6 +69,11 @@ syscall	freemem(void *pmem, uint nbytes)
 		prevfree->next = freemem->next;
         	prevfree->length = prevfree->length + freemem->length;
 	}
+	if (((int)freelist.next + freelist.length) == (int)freemem)
+        {
+                (freelist.next)->next = freemem->next;
+                freelist.length = freelist.length + freemem->length;
+        }
 	/* END OF COMPACTION */
 	return OK;
 }

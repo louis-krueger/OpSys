@@ -51,7 +51,7 @@ void *getmem(uint nbytes)
 	if (newmem == freelist.next)
 	{
 		ulong temp = (ulong)(freelist.next)->next;
-		if (((int)newmem + nbytes) > 0x07FFFFFF)
+		if (((int)newmem + nbytes) >=(int)platform.maxaddr)
 		{
 			newmem->next = NULL;
 			freelist.next = &freelist;
@@ -59,7 +59,7 @@ void *getmem(uint nbytes)
 		}
         	else
 		{
-			newmem->next = (void *)((int)newmem + (nbytes));
+			newmem->next = (void *)((int)newmem + nbytes);
 			freelist.next = newmem->next;
 			freelist.length = (freelist.length) - (newmem->length);
         	        (freelist.next)->next = (void *)temp;
