@@ -43,6 +43,8 @@ void *getmem(uint nbytes)
 			break;
                 
         }
+	if ((int)freemem  + nbytes > (int)platform.maxaddr)
+		return (void *)SYSERR;
 	/* END OF FREELIST TRAVERSAL */
 	/* SET UP THE NEW MEMORY BLOCK */
 	newmem = freemem;
@@ -51,7 +53,7 @@ void *getmem(uint nbytes)
 	if (newmem == freelist.next)			/* if the block we find is at the beggining of freelist */
 	{
 		ulong temp = (ulong)(freelist.next)->next;
-		if (((int)newmem + nbytes) >=(int)platform.maxaddr)
+		if (((int)newmem + nbytes) ==(int)platform.maxaddr)
 		{
 			newmem->next = NULL;
 			freelist.next = &freelist;

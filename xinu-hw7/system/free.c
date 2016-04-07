@@ -15,8 +15,7 @@
  */
 syscall	free(void *pmem)
 {
-	
-	memblk *block = (void *)(int)pmem - 8;
+	memblk *block = (void *)((int)pmem - 8);
 	// TODO: Perform some sanity checks to see if pmem is feasible and
 	//       could be from a malloc() request:
 	//       1) is ptr within heap region of memory?

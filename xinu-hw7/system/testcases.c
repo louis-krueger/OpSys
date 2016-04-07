@@ -46,8 +46,10 @@ void *getMemForTest(uint nbytes)
 syscall freeMemForTest(void* p)
 {
 	kprintf("Requested free 0x%08X.\r\n", p);	
-	if (free(p) == SYSERR)
+	syscall val = free(p);
+	if (val == SYSERR)
 		kprintf("Failed to free.\r\n");
+	return val;
 }
 
 /**
@@ -88,6 +90,7 @@ void testcases(void)
     kprintf("8) Request all the memory\r\n");
     kprintf("9) Request all the memory, and then request it all again\r\n");
     kprintf("a) Free pointer that is not allocated\r\n");
+    kprintf("b) Malloc vs Getmem test\r\n");
     kprintf("===TEST BEGIN===\r\n");
     // TODO: Test your operating system!
 	
@@ -362,10 +365,31 @@ void testcases(void)
     
     case 'a':
 	printFreeMem();
+	p01 = &freelist;
 	freeMemForTest(p01);
 	printFreeMem();	
 	break;	
- 
+
+    case 'b':
+	printFreeMem();
+	p01 = getmem(262144);
+	printFreeMem();
+	freemem(p01, 262144);
+	printFreeMem();
+	p01 = malloc(262144);
+	printFreeMem();
+	free(p01);
+	printFreeMem();
+	break;
+
+    case 'c':
+	printFreeMem();
+	p01 = getMemForTest(67108864);
+	printFreeMem();
+	freeMemForTest(p01);
+	printFreeMem();
+	break; 
+
     default:
 	kprintf("\r\nNow you've done it.\r\n");
         break;
