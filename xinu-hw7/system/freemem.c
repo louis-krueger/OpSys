@@ -1,5 +1,5 @@
 /**
- * Written by Samuel Scheel & Louis Kruger
+ * Written by Samuel Scheel & Louis Krueger
  * TA-BOT:MAILTO samuel.scheel@marquette.edu louis.krueger@marquette.edu
  * @file freemem.c
  * @provides freemem                                                     
@@ -18,6 +18,7 @@
  */
 syscall	freemem(void *pmem, uint nbytes)
 {
+	mutexAcquire();
 	// TODO: Insert back into free list, and compact with adjacent blocks.
 	/* START OF FREELIST RECONNECTION */
 	nbytes = (uint)roundmb(nbytes);
@@ -27,13 +28,13 @@ syscall	freemem(void *pmem, uint nbytes)
 	{
 		ulong temp = (ulong)freelist.next;
 		freelist.next = pmem;
-		freelist.length = nbytes;
+		freelist.length += nbytes;
 		(freelist.next)->next = (void*) temp;
 		(freelist.next)->length = nbytes;
 		prevfree = freelist.next;
 		freemem = prevfree->next;
 	}
-	else if (freelist.next == &freelist)		/* error check if freelist is full */
+	else if (freelist.next == NULL)			/* error check if freelist is full */
 	{
                 memblk* newblk = pmem;
                 newblk->length = nbytes;
@@ -69,11 +70,7 @@ syscall	freemem(void *pmem, uint nbytes)
 		prevfree->next = freemem->next;
         	prevfree->length = prevfree->length + freemem->length;
 	}
-	if (((int)freelist.next + freelist.length) == (int)freemem)			/* if freelist needs to be updated with compaction */
-        {
-                (freelist.next)->next = freemem->next;
-                freelist.length = freelist.length + freemem->length;
-        }
 	/* END OF COMPACTION */
+	mutexRelease();
 	return OK;
 }

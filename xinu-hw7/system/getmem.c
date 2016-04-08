@@ -1,5 +1,5 @@
 /**
- * Written by Samuel Scheel & Louis Kruger
+ * Written by Samuel Scheel & Louis Krueger
  * TA-BOT:MAILTO samuel.scheel@marquette.edu louis.krueger@marquette.edu
  * @file getmem.c
  * @provides getmem                                                       
@@ -17,12 +17,16 @@
  */
 void *getmem(uint nbytes)
 {
+	mutexAcquire();
 	// TODO: Search free list for first chunk large enough to fit.
 	//       Break off region of requested size; return pointer
 	//       to new memory region, and add any remaining chunk
 	//       back into the free list.
-	if (freelist.next == &freelist)
+	if (freelist.next == NULL)
+	{
+		mutexRelease();
 		return (void*)SYSERR;
+	}
 	/* START OF INITILIZATIONS */
 	memblk* newmem;				/* new block of memory */
 	memblk* freemem = freelist.next;	/* travsersal memory block */
@@ -38,13 +42,19 @@ void *getmem(uint nbytes)
                         freemem = freemem->next;
                 }
                 else if (freemem->length != nbytes)	/* if we are at the last block in free and the new block wont fit return SYSERR*/
-                	return (void *)SYSERR;
+                {
+			mutexRelease();	
+			return (void *)SYSERR;
+		}
 		else
 			break;
                 
         }
 	if ((int)freemem  + nbytes > (int)platform.maxaddr)
+	{
+		mutexRelease();
 		return (void *)SYSERR;
+	}
 	/* END OF FREELIST TRAVERSAL */
 	/* SET UP THE NEW MEMORY BLOCK */
 	newmem = freemem;
@@ -56,14 +66,14 @@ void *getmem(uint nbytes)
 		if (((int)newmem + nbytes) ==(int)platform.maxaddr)
 		{
 			newmem->next = NULL;
-			freelist.next = &freelist;
-			freelist.length = NULL;
+			freelist.next = NULL;
+			freelist.length -= nbytes;
 		}
         	else
 		{
 			newmem->next = (void *)((int)newmem + nbytes);
 			freelist.next = newmem->next;
-			freelist.length = (freelist.length) - (newmem->length);
+			freelist.length -= newmem->length;
         	        (freelist.next)->next = (void *)temp;
 	                (freelist.next)->length = freelist.length;
 		}	
@@ -83,5 +93,6 @@ void *getmem(uint nbytes)
                 newmem->next = (void *)((int)newmem + (nbytes));
 		prevfree->next = freemem;
 	}
+	mutexRelease();
 	return newmem;
 }

@@ -28,5 +28,5 @@ void *malloc(uint nbytes)
 		return (void *)SYSERR;
 	newmem->next = (void *)&(newmem->next);		/* set up accounting data */
 	newmem->length = nbytes;
-	return (void *)((int)newmem + 8);		/* move pointer above accounting information */
+	return (void *)((int)newmem + 8); 		/* move pointer above accounting information */
 }

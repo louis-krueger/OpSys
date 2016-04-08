@@ -19,6 +19,10 @@ syscall freeMemForTest(void*);
 void printFreeMem()
 {
    memblk* freemem = freelist.next;
+   if (freelist.next == NULL)
+	kprintf("The memory is maxed\r\n");
+   else
+   {
    kprintf(" ========== \r\n");
    kprintf("***Start Print***\r\n");
    do
@@ -32,6 +36,7 @@ void printFreeMem()
 		break;
    }
    while(1);
+   }
    kprintf("\tcurrent is the tail of heap, calcuatled end [0x07ffffff] - 0x%08X\r\n", (uint)freemem + (uint)freemem->length - 1);
    kprintf("***End Print***\r\n\r\n");
 }

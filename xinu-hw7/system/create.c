@@ -1,5 +1,4 @@
-/**
- * Written by Samuel Scheel & Louis Krueger
+/* Samuel Scheel & Louis Krueger
  * TA-BOT:MAILTO samuel.scheel@marquette.edu louis.krueger@marquette.edu
  * @file create.c
  * @provides create, newpid, userret
@@ -74,7 +73,7 @@ syscall create(void *funcaddr, ulong ssize, ulong priority, char *name, ulong na
    	ppcb->state = PRSUSP;
 	
 	// Set PCB stack base to the address of saddr minus its length
-	ppcb->stkbase = (ulong *)((ulong)saddr - ssize);
+	ppcb->stkbase = (ulong *)((ulong)saddr - ssize - ssize - 1);
 	
 	// Set PCB stack length to the address of saddr minus the stack's base
 	ppcb->stklen = ((ulong)saddr) - (ulong)ppcb->stkbase;
