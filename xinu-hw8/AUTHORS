@@ -1,0 +1,29 @@
+* Embedded XINU, Copyright (c) 2007, Douglas Comer and Dennis Brylow
+* All rights reserved.
+
+   The XINU operating system was Copyright (c) 1984 by Dr. Douglas
+Comer and Prentice Hall, and ran on the LSI-11 platform.  The VAX port
+of XINU was developed in 1987 by Douglas Comer.  The IBM PC port of
+XINU was developed in 1988 by Douglas Comer and Timothy Fossum, and
+the 486 version was developed by John Lin in 1995.  The Macintosh
+platform port of XINU was developed in 1989 by Douglas Comer and
+Steven Munson.  The Motorola 68000 (Sun 3) port of XINU was developed
+by Shawn Ostermann, circa 1988.  The Sparc port of XINU was developed
+by Jim Griffioen.  The PowerPC port of XINU was developed in 2005 by
+Dennis Brylow.  The MIPS implementation of Embedded XINU was developed
+in 2006 by Dennis Brylow.
+
+   The Embedded XINU operating system is Copyright (c) 2007 by Douglas
+Comer and Dennis Brylow.
+
+   Embedded XINU is a fresh reimplementation of the XINU design in
+ANSI-compliant C on an embedded RISC architecture.  The MIPS port of
+Embedded XINU was developed over the course of 2006 and 2007 at
+Marquette University, under the direction of Dr. Dennis Brylow.
+
+   Major contributors to the Embedded XINU Project include Aaron
+Gember, Paul Hinze, Steve Luppi, Mohammad "Meraj" Molla, Justin
+Picotte, Justin Rawson, Michael Schultz, and Anthony Stassi.
+
+   Work on Embedded XINU was made possible in part by support from
+Marquette University, the Wehr Foundation, and Cisco Systems.

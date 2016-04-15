@@ -1,0 +1,28 @@
+MIPS_ROOT = /usr/local/project/mipsel-dev/bin
+MIPS_PREFIX = mipsel-
+
+COMPILER_ROOT = ${MIPS_ROOT}/${MIPS_PREFIX}
+
+CC       = ${COMPILER_ROOT}gcc
+CPP      = ${COMPILER_ROOT}cpp
+LD       = ${COMPILER_ROOT}ld
+AS       = ${COMPILER_ROOT}as
+AR       = ${COMPILER_ROOT}ar
+MAKEDEP  = gcc -M -MG
+
+DOCGEN   = doxygen
+
+DETAIL   = -DDETAIL
+
+DEFS     =
+INCLUDE  = -I../include
+
+CFLAGS = -O0 -Wall -Wstrict-prototypes -Wno-trigraphs            \
+         -nostdinc -fno-builtin -fno-strict-aliasing -fno-common \
+         -fomit-frame-pointer -fno-pic -ffunction-sections -G 0  \
+         -mlong-calls -mno-abicalls -mabi=32 -march=mips32       \
+         -Wa,-32 -Wa,-march=mips32 -Wa,-mips32 -Wa,--trap        \
+	 -Wno-unused-variable ${INCLUDE} ${DETAIL} ${DEFS} -c
+
+ASFLAGS  = ${INCLUDE} -march=mips32 -mips32
+
