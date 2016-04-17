@@ -26,7 +26,7 @@ devcall fileDelete(int fd)
         return SYSERR;
     }
     wait(supertab->sb_dirlock);
-    if (sbFreeBlock(supertab, fd) == SYSERR)
+    if (sbFreeBlock(supertab, filetab[fd].fn_blocknum) == SYSERR)
     {
 	signal(supertab->sb_dirlock);
 	return SYSERR;
