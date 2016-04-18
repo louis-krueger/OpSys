@@ -14,10 +14,11 @@
  */
 command xsh_test(int nargs, char *args[])
 {
-    //TODO: Test your O/S.
-    
-    int c, z;
-    kprintf("0) Get 64 blocks.\r\n");
+    int c;
+    int i = -1, j = 0;    
+    int results[256];
+
+    kprintf("0) Get 64 blocks, free 64 blocks.\r\n");
     kprintf("1) \r\n");
     kprintf("2) \r\n");
     kprintf("===TEST BEGIN===\r\n");
@@ -27,8 +28,19 @@ command xsh_test(int nargs, char *args[])
     switch (c)
     {
     case '0':
-	for (z = 0; z < 64; z++)
-		sbGetBlock(supertab);
+	do
+	{
+		c = sbGetBlock(supertab);
+		if (c != SYSERR)
+		{
+			results[i++] = c;
+			kprintf("sbGetBlock() = %d\r\n",  c);
+		}
+		else
+			break;
+	}
+	while (1);
+	sbFreeBlock(supertab, results[50]);
 	break;
     
     case '1':

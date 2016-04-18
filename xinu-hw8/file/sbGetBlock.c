@@ -35,7 +35,7 @@ devcall sbGetBlock(struct superblock *psuper)
     freeblk = psuper->sb_freelst;
     if (NULL == freeblk)
     {
-        printf("sbGetFree() ERROR: Superblock free list is empty!\n");
+        kprintf("sbGetFree() ERROR: Superblock free list is empty!\r\n");
         return SYSERR;
     }
 
@@ -45,7 +45,6 @@ devcall sbGetBlock(struct superblock *psuper)
     if (freeblk->fr_count > 0)
     {
         freeblk->fr_count--;
-	kprintf("sbGetBlock-1result pre: %d\r\n", result);
         result = freeblk->fr_free[freeblk->fr_count];
 	kprintf("sbGetBlock-1result post: %d\r\n", result);
         freeblk->fr_free[freeblk->fr_count] = 0;
