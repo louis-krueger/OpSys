@@ -23,7 +23,8 @@ devcall sbFreeBlock(struct superblock *psuper, int block)
     //  free blocks.  Use the superblock's locks to guarantee
     //  mutually exclusive access to the free list, and write
     //  the changed free list segment(s) back to disk.
-    struct freeblock *freeblk;
+    kprintf("sbFreeBlock(%d)\r\n", block);
+    struct freeblock *freeblk, *free2;
     struct dentry *phw;
     int diskfd;
 
@@ -41,18 +42,14 @@ devcall sbFreeBlock(struct superblock *psuper, int block)
     diskfd = phw - devtab;
     wait(psuper->sb_freelock);
     freeblk = psuper->sb_freelst;
-    if (freeblk == NULL)
+    if (NULL == freeblk)
     //We must recreate the free block.
     {
-	kprintf("sbFreeBlock-freeblk = NULL enter\r\n");
-	freeblk->fr_blocknum = block;
-	kprintf("A\r\n");
-	psuper->sb_freelst = freeblk;
-	kprintf("B\r\n");
+	free2->fr_blocknum = block;
+	free2->fr_count = 0;
+	free2->fr_next = NULL;
+	psuper->sb_freelst = free2;
 	freeblk = psuper->sb_freelst;
-	kprintf("C\r\n");
-	freeblk->fr_count = 0;
-	kprintf("sbFreeBlock-freeblk = NULL exit\r\n");
     }
     else
     {
@@ -60,13 +57,26 @@ devcall sbFreeBlock(struct superblock *psuper, int block)
 	{
 		if (freeblk->fr_next == NULL)
 		{
-			signal(psuper->sb_freelock);
-			return SYSERR;
+			free2->fr_blocknum = block;
+			free2->fr_count = 0;
+        		free2->fr_next = NULL;
+			freeblk->fr_next = free2;
+			seek(diskfd, block);
+			if (SYSERR == write(diskfd, free2, sizeof(struct freeblock)))
+    			{
+        			signal(psuper->sb_freelock);
+        			return SYSERR;
+    			}
+    			signal(psuper->sb_freelock);
+    			return OK;
+		}
+		else
+		{
+			freeblk = freeblk->fr_next;
 		}
 	}
-	freeblk = freeblk->fr_next;
 	freeblk->fr_free[freeblk->fr_count] = block;
-	freeblk->fr_count++;
+	freeblk->fr_count++;	
     }
     seek(diskfd, block);
     if (SYSERR == write(diskfd, freeblk, sizeof(struct freeblock)))

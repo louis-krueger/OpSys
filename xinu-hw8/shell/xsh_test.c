@@ -15,7 +15,7 @@
 command xsh_test(int nargs, char *args[])
 {
     int c;
-    int i = -1, j = 0;    
+    int i = 0, j = 0;    
     int results[256];
 
     kprintf("0) Get 64 blocks, free 64 blocks.\r\n");
@@ -28,19 +28,17 @@ command xsh_test(int nargs, char *args[])
     switch (c)
     {
     case '0':
-	do
+	while(1)
 	{
 		c = sbGetBlock(supertab);
-		if (c != SYSERR)
-		{
-			results[i++] = c;
-			kprintf("sbGetBlock() = %d\r\n",  c);
-		}
-		else
+		kprintf("sbGetBlock() = %d\r\n",  c);
+		if (SYSERR == c)
 			break;
+		results[i] = c;
+		i++;
 	}
-	while (1);
-	sbFreeBlock(supertab, results[50]);
+	for (j = 0; j < 64; j++)
+		sbFreeBlock(supertab, results[j]);
 	break;
     
     case '1':

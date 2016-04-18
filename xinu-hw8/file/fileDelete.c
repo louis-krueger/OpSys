@@ -26,15 +26,15 @@ devcall fileDelete(int fd)
         return SYSERR;
     }
     wait(supertab->sb_dirlock);
-    //kprintf("filetab[fd].fn_blocknum = %d\r\n", filetab[fd].fn_blocknum);
+    kprintf("filetab[fd].fn_blocknum = %d\r\n", filetab[fd].fn_blocknum);
     if (sbFreeBlock(supertab, filetab[fd].fn_blocknum) == SYSERR)
     {
 	signal(supertab->sb_dirlock);
 	return SYSERR;
     }
-    //kprintf("1 fn_state = %d\r\n", filetab[fd].fn_state);
+    kprintf("1 fn_state = %d\r\n", filetab[fd].fn_state);
     filetab[fd].fn_state = FILE_FREE;
-    //kprintf("2 fn_state = %d\r\n", filetab[fd].fn_state);
+    kprintf("2 fn_state = %d\r\n", filetab[fd].fn_state);
     signal(supertab->sb_dirlock);
     return OK;
 }

@@ -16,7 +16,7 @@ devcall fileCreate(char *name)
 
     if ((NULL == supertab) || (NULL == filetab))
     {
-	//kprintf("fileCreate-SYSERR1\r\n");
+	kprintf("fileCreate-SYSERR1\r\n");
         return SYSERR;
     }
 
@@ -28,7 +28,7 @@ devcall fileCreate(char *name)
     if (fd >= DIRENTRIES)
     {
         signal(supertab->sb_dirlock);
-	//kprintf("fileCreate-SYSERR2\r\n");
+	kprintf("fileCreate-SYSERR2\r\n");
         return SYSERR;
     }
 
@@ -41,7 +41,7 @@ devcall fileCreate(char *name)
     {
         filetab[fd].fn_state = FILE_FREE;
         signal(supertab->sb_dirlock);
-	//kprintf("fileCreate-SYSERR3\r\n");
+	kprintf("fileCreate-SYSERR3\r\n");
         return SYSERR;
     }
     filetab[fd].fn_state = FILE_USED | FILE_OPEN;
@@ -50,7 +50,7 @@ devcall fileCreate(char *name)
     filetab[fd].fn_blocknum = sbGetBlock(supertab);
     if (SYSERR == filetab[fd].fn_blocknum)
     {
-	//kprintf("fileCreate-SYSERR4\r\n");
+	kprintf("fileCreate-SYSERR4\r\n");
         return SYSERR;
     }
 
