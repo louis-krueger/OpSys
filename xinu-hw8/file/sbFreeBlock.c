@@ -26,6 +26,7 @@ devcall sbFreeBlock(struct superblock *psuper, int block)
     struct freeblock *freeblk;
     struct dentry *phw;
     int diskfd;
+    int result;
 
     if (NULL == psuper)
     {
@@ -37,25 +38,25 @@ devcall sbFreeBlock(struct superblock *psuper, int block)
         return SYSERR;
     }
     diskfd = phw - devtab;
-    wait(supertab->sb_freelock);
-    freeblk = supertab->sb_freelst;
+    wait(psuper->sb_freelock);
+    freeblk = psuper->sb_freelst;
     while (freeblk->fr_count == FREEBLOCKMAX) 
     {
 	if (freeblk->fr_next == NULL)
 	{
-		signal(supertab->sb_freelock);
+		signal(psuper->sb_freelock);
 		return SYSERR;
 	}
 	freeblk = freeblk->fr_next;
     }
-    freeblk->fr_count++;
     freeblk->fr_free[freeblk->fr_count] = block;
+    freeblk->fr_count++;
     seek(diskfd, block);
     if (SYSERR == write(diskfd, psuper, sizeof(struct freeblock)))
     {
-	signal(supertab->sb_freelock);
+	signal(psuper->sb_freelock);
 	return SYSERR;
     }
-    signal(supertab->sb_freelock);
+    signal(psuper->sb_freelock);
     return OK;
 }

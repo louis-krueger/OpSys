@@ -22,11 +22,13 @@ devcall sbGetBlock(struct superblock *psuper)
 
     if (NULL == psuper)
     {
+	kprintf("sbGetBlock-SYSERR1\r\n");
         return SYSERR;
     }
     phw = psuper->sb_disk;
     if (NULL == phw)
     {
+	kprintf("sbGetBlock-SYSERR2\r\n");
         return SYSERR;
     }
     diskfd = phw - devtab;
@@ -43,7 +45,9 @@ devcall sbGetBlock(struct superblock *psuper)
     if (freeblk->fr_count > 0)
     {
         freeblk->fr_count--;
+	kprintf("sbGetBlock-1result pre: %d\r\n", result);
         result = freeblk->fr_free[freeblk->fr_count];
+	kprintf("sbGetBlock-1result post: %d\r\n", result);
         freeblk->fr_free[freeblk->fr_count] = 0;
 
         // Update this free block record on disk.
@@ -60,11 +64,15 @@ devcall sbGetBlock(struct superblock *psuper)
         seek(diskfd, freeblk->fr_blocknum);
         if (SYSERR == write(diskfd, freeblk, sizeof(struct freeblock)))
         {
+	    kprintf("sbGetBlock-SYSERR3\r\n");
             return SYSERR;
         }
         freeblk->fr_next = free2;
         if (!result)
+	{
+	    kprintf("sbGetBlock-!result error: %d\r\n", result);
             result = SYSERR;
+	}
     }
     else
         // The first free block list segment is empty.
@@ -79,18 +87,24 @@ devcall sbGetBlock(struct superblock *psuper)
             if (SYSERR ==
                 write(diskfd, psuper, sizeof(struct superblock)))
             {
+		kprintf("sbGetBlock-SYSERR4\r\n");
                 return SYSERR;
             }
             psuper->sb_dirlst = swizzle;
+	    kprintf("sbGetBlock-2result pre: %d\r\n", result);
             result = freeblk->fr_blocknum;
+	    kprintf("sbGetBlock-2result post: %d\r\n", result);
             free(freeblk);
             signal(psuper->sb_freelock);
+	    kprintf("sbGetBlock-result1\r\n");
             return result;
         }
         // Copy over contents of next free block list segment,
         //  and then give out the block containing that segment.
         free2 = freeblk->fr_next;
+	kprintf("sbGetBlock-3result pre: %d\r\n", result);
         result = free2->fr_blocknum;
+	kprintf("sbGetBlock-3result post: %d\r\n", result);
         for (i = free2->fr_count - 1; i >= 0; i--)
         {
             freeblk->fr_free[i] = free2->fr_free[i];
@@ -113,6 +127,7 @@ devcall sbGetBlock(struct superblock *psuper)
         seek(diskfd, freeblk->fr_blocknum);
         if (SYSERR == write(diskfd, freeblk, sizeof(struct freeblock)))
         {
+	    kprintf("sbGetBlock-SYSERR5\r\n");
             return SYSERR;
         }
         freeblk->fr_next = free2;
@@ -120,5 +135,6 @@ devcall sbGetBlock(struct superblock *psuper)
     }
 
     signal(psuper->sb_freelock);
+    kprintf("sbGetBlock-result2\r\n");
     return result;
 }

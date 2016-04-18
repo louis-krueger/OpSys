@@ -5,7 +5,7 @@
 /* Samuel Scheel                                                   */
 /* and                                                             */
 /* Louis Krueger                                                   */
-/* TA-BOT:MAILTO samuel.scheel@marquette.edu louis.krueger@maruqette.edu */
+/* TA-BOT:MAILTO samuel.scheel@marquette.edu louis.krueger@marquette.edu */
 
 #include <kernel.h>
 #include <memory.h>
@@ -21,17 +21,20 @@ devcall fileDelete(int fd)
     //  and return its space to the free disk block list.
     //  Use the superblock's locks to guarantee mutually exclusive
     //  access to the directory index.
-    if ((fd >= DIRENTRIES) || (NULL == supertab) || (NULL == filetab))
+    if ((isbadfd(fd)) || (NULL == supertab) || (NULL == filetab))
     {
         return SYSERR;
     }
     wait(supertab->sb_dirlock);
+    kprintf("filetab[fd].fn_blocknum = %d\r\n", filetab[fd].fn_blocknum);
     if (sbFreeBlock(supertab, filetab[fd].fn_blocknum) == SYSERR)
     {
 	signal(supertab->sb_dirlock);
 	return SYSERR;
     }
+    kprintf("1 fn_state = %d\r\n", filetab[fd].fn_state);
     filetab[fd].fn_state = FILE_FREE;
+    kprintf("2 fn_state = %d\r\n", filetab[fd].fn_state);
     signal(supertab->sb_dirlock);
     return OK;
 }
