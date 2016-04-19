@@ -24,10 +24,10 @@ devcall sbFreeBlock(struct superblock *psuper, int block)
     //  mutually exclusive access to the free list, and write
     //  the changed free list segment(s) back to disk.
     kprintf("sbFreeBlock(%d)\r\n", block);
-    struct freeblock *freeblk, *free2;
+    struct freeblock *freeblk;
+    struct freeblock *free2;
     struct dentry *phw;
     int diskfd;
-
     if (NULL == psuper)
     {
 	kprintf("sbFreeBlock-SYSERR1\r\n");
@@ -45,23 +45,33 @@ devcall sbFreeBlock(struct superblock *psuper, int block)
     if (NULL == freeblk)
     //We must recreate the free block.
     {
+	free2 = malloc(sizeof(struct freeblock));
 	free2->fr_blocknum = block;
 	free2->fr_count = 0;
 	free2->fr_next = NULL;
 	psuper->sb_freelst = free2;
 	freeblk = psuper->sb_freelst;
+	seek(diskfd, block);
+        if (SYSERR == write(diskfd, freeblk, sizeof(struct freeblock)))
+        {
+        	signal(psuper->sb_freelock);
+        	return SYSERR;
+    	}
+    	signal(psuper->sb_freelock);
+    	return OK;	
     }
     else
     {
-	while (freeblk->fr_count == FREEBLOCKMAX) 
+	while (freeblk->fr_count >= FREEBLOCKMAX) 
 	{
 		if (freeblk->fr_next == NULL)
 		{
+			free2 = malloc(sizeof(struct freeblock));
 			free2->fr_blocknum = block;
 			free2->fr_count = 0;
         		free2->fr_next = NULL;
 			freeblk->fr_next = free2;
-			seek(diskfd, block);
+			seek(diskfd, free2->fr_blocknum);
 			if (SYSERR == write(diskfd, free2, sizeof(struct freeblock)))
     			{
         			signal(psuper->sb_freelock);
@@ -77,13 +87,13 @@ devcall sbFreeBlock(struct superblock *psuper, int block)
 	}
 	freeblk->fr_free[freeblk->fr_count] = block;
 	freeblk->fr_count++;	
+   	seek(diskfd, block);
+   	if (SYSERR == write(diskfd, freeblk, sizeof(struct freeblock)))
+    	{
+		signal(psuper->sb_freelock);
+		return SYSERR;
+    	}
+    	signal(psuper->sb_freelock);
+        return OK;
     }
-    seek(diskfd, block);
-    if (SYSERR == write(diskfd, freeblk, sizeof(struct freeblock)))
-    {
-	signal(psuper->sb_freelock);
-	return SYSERR;
-    }
-    signal(psuper->sb_freelock);
-    return OK;
 }

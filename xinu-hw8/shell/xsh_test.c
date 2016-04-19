@@ -37,7 +37,7 @@ command xsh_test(int nargs, char *args[])
 		results[i] = c;
 		i++;
 	}
-	for (j = 0; j < 64; j++)
+	for (j = 0; j < i; j++)
 		sbFreeBlock(supertab, results[j]);
 	break;
     
