@@ -21,21 +21,25 @@ devcall fileDelete(int fd)
     //  and return its space to the free disk block list.
     //  Use the superblock's locks to guarantee mutually exclusive
     //  access to the directory index.
+    // A little error checking...
     if ((isbadfd(fd)) || (NULL == supertab) || (NULL == filetab))
     {
         return SYSERR;
     }
     wait(supertab->sb_dirlock);
-    if (sbFreeBlock(supertab, filetab[fd].fn_blocknum) == SYSERR)
-    {
-	signal(supertab->sb_dirlock);
-	return SYSERR;
-    }
+    // Blanking out file's information
     filetab[fd].fn_length = 0;
     filetab[fd].fn_cursor = 0;
     filetab[fd].fn_name[0] = '\0';
     free(filetab[fd].fn_data);
     filetab[fd].fn_state = FILE_FREE;
+    // Free corresponding block error check
+    if (sbFreeBlock(supertab, filetab[fd].fn_blocknum) == SYSERR)
+    {
+	signal(supertab->sb_dirlock);
+	return SYSERR;
+    }
+    // Commit changes of superblock to disk
     seek(supertab->sb_disk - devtab, supertab->sb_dirlst->db_blocknum);
     write(supertab->sb_disk - devtab, supertab->sb_dirlst, sizeof(struct dirblock));
     signal(supertab->sb_dirlock);
