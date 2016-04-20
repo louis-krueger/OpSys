@@ -85,24 +85,11 @@ devcall sbFreeBlock(struct superblock *psuper, int block)
 	{
 		freeblk = freeblk->fr_next;
 	}
-	if (freeblk->fr_count < FREEBLOCKMAX)
+	if (((freeblk->fr_count == 0) && (psuper->sb_freelst == freeblk) && (freeblk->fr_next == NULL)) 
+	     || (freeblk->fr_count >= FREEBLOCKMAX))
 	{
-		freeblk->fr_free[freeblk->fr_count] = block;
-                freeblk->fr_count++;
-                seek(diskfd, freeblk->fr_blocknum);
-                if (SYSERR == write(diskfd, freeblk, sizeof(struct freeblock)))
-                {
-                        signal(psuper->sb_freelock);
-                        return SYSERR;
-                }
-                signal(psuper->sb_freelock);
-                return OK;
-	}
-	else
-	// If the end collector node is full and we need to make a new one
-	{
-		// Setting up new collector node
-		free2 = malloc(sizeof(struct freeblock));
+                // Setting up new collector node
+                free2 = malloc(sizeof(struct freeblock));
                 free2->fr_blocknum = block;
                 free2->fr_count = 0;
                 free2->fr_next = NULL;
@@ -114,13 +101,26 @@ devcall sbFreeBlock(struct superblock *psuper, int block)
                 seek(diskfd, freeblk->fr_blocknum);
                 if (SYSERR == write(diskfd, freeblk, sizeof(struct freeblock)))
                 {
-                	signal(psuper->sb_freelock);
+                        signal(psuper->sb_freelock);
                         return SYSERR;
                 }
                 freeblk->fr_next = swizzle;
-		// Commit changes of new collector node to disk
-		seek(diskfd, free2->fr_blocknum);
+                // Commit changes of new collector node to disk
+                seek(diskfd, free2->fr_blocknum);
                 if (SYSERR == write(diskfd, free2, sizeof(struct freeblock)))
+                {
+                        signal(psuper->sb_freelock);
+                        return SYSERR;
+                }
+                signal(psuper->sb_freelock);
+                return OK;
+        }
+	else
+	{
+		freeblk->fr_free[freeblk->fr_count] = block;
+                freeblk->fr_count++;
+                seek(diskfd, freeblk->fr_blocknum);
+                if (SYSERR == write(diskfd, freeblk, sizeof(struct freeblock)))
                 {
                         signal(psuper->sb_freelock);
                         return SYSERR;

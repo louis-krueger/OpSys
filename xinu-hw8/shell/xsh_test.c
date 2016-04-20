@@ -58,6 +58,12 @@ command xsh_test(int nargs, char *args[])
         sbFreeBlock(supertab, 64);
         kprintf("sbGetBlock(%d)\r\n",  64);
         break;
+    case 'n':
+	sbFreeBlock(supertab, 2);
+	sbFreeBlock(supertab, 251);
+
+
+	break;
     case '0':
 	while(1)
 	{
