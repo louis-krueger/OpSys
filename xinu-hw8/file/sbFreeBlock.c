@@ -73,56 +73,12 @@ devcall sbFreeBlock(struct superblock *psuper, int block)
     else
     // The first collector node is already established
     {
-	while (freeblk->fr_count >= FREEBLOCKMAX) 
+	while (freeblk->fr_next != NULL)
 	// Traverse collector nodes until we find one we can add to
 	{
-		if (freeblk->fr_next == NULL)
-		// If the the collector nodes are full and we need to make a new one
-		{
-			// Setting up new collector node
-			free2 = malloc(sizeof(struct freeblock));
-			free2->fr_blocknum = block;
-			free2->fr_count = 0;
-        		free2->fr_next = NULL;
-			freeblk->fr_next = free2;
-			// Swizzle the previous collector node's information
-			swizzle = freeblk->fr_next;
-        		freeblk->fr_next = (struct freeblock *)swizzle->fr_blocknum;
-			// Commit changes of collector node to disk
-			seek(diskfd, freeblk->fr_blocknum);
-			if (SYSERR == write(diskfd, freeblk, sizeof(struct freeblock)))
-    			{
-        			signal(psuper->sb_freelock);
-        			return SYSERR;
-    			}
-			freeblk->fr_next = swizzle;
-    			signal(psuper->sb_freelock);
-    			return OK;
-		}
-		else
-		{
-			freeblk = freeblk->fr_next;
-		}
+		freeblk = freeblk->fr_next;
 	}
-	if (freeblk->fr_next != NULL)
-	// If we need to swizzle the collector node
-	{
-		swizzle = freeblk->fr_next;
-		freeblk->fr_next = (struct freeblock *)swizzle->fr_blocknum;
-		freeblk->fr_free[freeblk->fr_count] = block;
-		freeblk->fr_count++;
-   		seek(diskfd, freeblk->fr_blocknum);
-   		if (SYSERR == write(diskfd, freeblk, sizeof(struct freeblock)))
-    		{
-			signal(psuper->sb_freelock);
-			return SYSERR;
-    		}
-		freeblk->fr_next = swizzle;
-    		signal(psuper->sb_freelock);
-        	return OK;
-	}
-	else
-	// If there is nothing to swizzle
+	if (freeblk->fr_count < FREEBLOCKMAX)
 	{
 		freeblk->fr_free[freeblk->fr_count] = block;
                 freeblk->fr_count++;
@@ -132,7 +88,30 @@ devcall sbFreeBlock(struct superblock *psuper, int block)
                         signal(psuper->sb_freelock);
                         return SYSERR;
                 }
-		signal(psuper->sb_freelock);
+                signal(psuper->sb_freelock);
+                return OK;
+	}
+	else
+	// If the end collector node is full and we need to make a new one
+	{
+		// Setting up new collector node
+		free2 = malloc(sizeof(struct freeblock));
+                free2->fr_blocknum = block;
+                free2->fr_count = 0;
+                free2->fr_next = NULL;
+                freeblk->fr_next = free2;
+                // Swizzle the previous collector node's information
+                swizzle = freeblk->fr_next;
+                freeblk->fr_next = (struct freeblock *)swizzle->fr_blocknum;
+                // Commit changes of collector node to disk
+                seek(diskfd, freeblk->fr_blocknum);
+                if (SYSERR == write(diskfd, freeblk, sizeof(struct freeblock)))
+                {
+                	signal(psuper->sb_freelock);
+                        return SYSERR;
+                }
+                freeblk->fr_next = swizzle;
+                signal(psuper->sb_freelock);
                 return OK;
 	}
     }
