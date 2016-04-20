@@ -67,6 +67,13 @@ devcall sbFreeBlock(struct superblock *psuper, int block)
     	}
 	psuper->sb_freelst = swizzle;
 	psuper->sb_dirlst = swizzle2;
+	// Commit changes of new collector node to disk	
+	seek(diskfd, free2->fr_blocknum);
+	if (SYSERR == write(diskfd, free2, sizeof(struct freeblock)))
+        {
+                signal(psuper->sb_freelock);
+                return SYSERR;
+        }
     	signal(psuper->sb_freelock);
     	return OK;	
     }
@@ -103,7 +110,7 @@ devcall sbFreeBlock(struct superblock *psuper, int block)
                 // Swizzle the previous collector node's information
                 swizzle = freeblk->fr_next;
                 freeblk->fr_next = (struct freeblock *)swizzle->fr_blocknum;
-                // Commit changes of collector node to disk
+                // Commit changes of old collector node to disk
                 seek(diskfd, freeblk->fr_blocknum);
                 if (SYSERR == write(diskfd, freeblk, sizeof(struct freeblock)))
                 {
@@ -111,6 +118,13 @@ devcall sbFreeBlock(struct superblock *psuper, int block)
                         return SYSERR;
                 }
                 freeblk->fr_next = swizzle;
+		// Commit changes of new collector node to disk
+		seek(diskfd, free2->fr_blocknum);
+                if (SYSERR == write(diskfd, free2, sizeof(struct freeblock)))
+                {
+                        signal(psuper->sb_freelock);
+                        return SYSERR;
+                }
                 signal(psuper->sb_freelock);
                 return OK;
 	}
