@@ -3,7 +3,7 @@
  * @provides xsh_ping, echoRequest
  *
  */
-/* Embedded XINU, Copyright (C) 2009.  All rights reserved. */
+/* Embedded XINU, Copyright (C) 2009, 2016.  All rights reserved. */
 
 #include <xinu.h>
 
@@ -17,10 +17,6 @@ int icmpPrint(void *buf, int length);
  */
 int echoRequest(char *dst)
 {
-#ifndef ETH0
-    printf("No ETH0 device.\n");
-    return 1;
-#else
     char requestpkt[REQUEST_PKTSZ];
     char receivepkt[PKTSZ];
     struct ethergram *ether, *request;
@@ -46,7 +42,6 @@ int echoRequest(char *dst)
     //  Print reply packets (icmpPrint()) and keep stats.
 
     return OK;
-#endif                          /* ETH0 */
 }
 
 

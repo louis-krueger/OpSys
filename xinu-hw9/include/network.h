@@ -123,7 +123,7 @@ struct arpgram
 #define MAX_READ_ATTEMPTS   10
 #define REQUEST_PKTSZ       96
 #define ARP_PKTSZ           42
-#define PING_GATEWAY      "00:16:3E:19:04:A4\0"     /* zardoz */
+#define PING_GATEWAY      "52:54:00:5A:4D:06\0"     /* zardoz */
 
 /* Networking functions */
 int arp_reply(void *buf);
