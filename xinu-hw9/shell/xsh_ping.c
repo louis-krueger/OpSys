@@ -1,7 +1,11 @@
 /**
  * @file     xsh_ping.c
  * @provides xsh_ping, echoRequest
- *
+ *  modified by
+ * Louis Krueger
+ * &
+ * Samuel Scheel
+ * TA-BOT:MAILTO samuel.scheel@marquette.edu louis.krueger@marquette.edu
  */
 /* Embedded XINU, Copyright (C) 2009, 2016.  All rights reserved. */
 
@@ -22,25 +26,45 @@ int echoRequest(char *dst)
     struct ethergram *ether, *request;
     struct ipv4gram *ippkt;
     struct icmpgram *icmp;
-    int length;
+    int length, i;
     int attempts, totalsent, dropped;
     ushort id, seq;
     bool endLoop;
 
-    totalsent = 0;
-    dropped = 0;
-    id = 0;
-    seq = 0;
+    //totalsent = 0;
+    //dropped = 0;
+    //id = 0;
+    //seq = 0;
     request = (struct ethergram *)requestpkt;
     ether = (struct ethergram *)receivepkt;
 
+    if(ether == request)
+	kprintf("xsh_ping (echorequest) ether == request");
+    
     // TODO: Zero out memory for receiving packets.
+    for (i = 0; i  < PKTSZ; i++)
+	receivepkt[i] = NULL;
+    //if(SYSERR == icmpPrep(ether, 100, 1));
+    //	kprintf("xsh_ping (echoRequest) SYSERR 1");	
+    
+
     //  Construct an ICMP echo request packet.  (See icmpPrep() for help)
+
     //  Write the constructed packet to the ethernet device.
     //  Read from the ethernet device and sleep.
+    read(ETH0, receivepkt, PKTSZ);
+    read(ETH0, request, PKTSZ);
+    read(ETH0, ether, PKTSZ);
+    sleep(1000);
+    //icmpPrint(ether, PKTSZ);
     //  Reply to ARP requests using arp_reply() if appropriate.
     //  Print reply packets (icmpPrint()) and keep stats.
 
+    icmpPrint(receivepkt, PKTSZ);
+    icmpPrint(request, PKTSZ);
+    icmpPrint(ether, PKTSZ);
+   
+    kprintf("****end of echo request****\r\n");
     return OK;
 }
 
@@ -66,3 +90,30 @@ command xsh_ping(ushort nargs, char *args[])
 
     return OK;
 }
+/* Decipher the reply to the echo request
+ * @param *buf pointer to the ethernet pkt
+ * @param length length of ethernet pkt
+ *  
+ */
+int icmpPrint(void *buf, int length)
+{
+    struct ipv4gram *ip = NULL;
+    struct icmpgram *icmp = NULL;
+
+    ip = (struct ipv4gram *)buf;
+    icmp = (struct icmpgram *)ip->data;
+
+    printf("%d bytes from ", ntohs(ip->length));
+    printf("(%d.%d.%d.%d) ",
+           ip->src[0], ip->src[1], ip->src[2], ip->src[3]);
+    printf("icmp_seq=%d ", ntohs(icmp->seq));
+    printf("ttl=%d", ip->ttl);
+    if (ICMP_REPLY != icmp->type)
+    {
+        printf("\t(not reply)");
+    }
+
+    printf("\n");
+    return OK;
+}
+

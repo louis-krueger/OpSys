@@ -17,7 +17,7 @@
 #define SHELL_CMDPRIO 20        /**< command process priority           */
 
 /* Message constants */
-#define SHELL_BANNER  "\033[1;35m______________________________________\n    _    _  _____  ______   _     _ \n   \\ \\  / /(_____)|  ___ \\ | |   | |\n    \\ \\/ /    _   | |   | || |   | |\n     )  (    | |  | |   | || |   | |\n    / /\\ \\  _| |_ | |   | || |___| |\n   /_/  \\_\\(_____)|_|   |_| \\______|\n______________________________________\033[0;39m\n\n"
+#define SHELL_BANNER  "\033[1;36m─────────▄──────────────▄\n────────▌▒█───────────▄▀▒▌\n────────▌▒▒▀▄───────▄▀▒▒▒▐\n───────▐▄▀▒▒▀▀▀▀▄▄▄▀▒▒▒▒▒▐\n─────▄▄▀▒▒▒▒▒▒▒▒▒▒▒█▒▒▄█▒▐\n───▄▀▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▀██▀▒▌\n──▐▒▒▒▄▄▄▒▒▒▒▒▒▒▒▒▒▒▒▒▀▄▒▒▌\n──▌▒▒▐▄█▀▒▒▒▒▄▀█▄▒▒▒▒▒▒▒█▒▐\n─▐▒▒▒▒▒▒▒▒▒▒▒▌██▀▒▒▒▒▒▒▒▒▀▄▌\n─▌▒▀▄██▄▒▒▒▒▒▒▒▒▒▒▒░░░░▒▒▒▒▌\n─▌▀▐▄█▄█▌▄▒▀▒▒▒▒▒▒░░░░░░▒▒▒▐\n▐▒▀▐▀▐▀▒▒▄▄▒▄▒▒▒▒▒░░░░░░▒▒▒▒▌\n▐▒▒▒▀▀▄▄▒▒▒▄▒▒▒▒▒▒░░░░░░▒▒▒▐\n─▌▒▒▒▒▒▒▀▀▀▒▒▒▒▒▒▒▒░░░░▒▒▒▒▌\n─▐▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▐\n──▀▄▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▄▒▒▒▒▌\n────▀▄▒▒▒▒▒▒▒▒▒▒▄▄▄▀▒▒▒▒▄▀\n───▐▀▒▀▄▄▄▄▄▄▀▀▀▒▒▒▒▒▄▄▀\n──▐▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒\n\n\033[1;35m______________________________________\n    _    _  _____  ______   _     _ \n   \\ \\  / /(_____)|  ___ \\ | |   | |\n    \\ \\/ /    _   | |   | || |   | |\n     )  (    | |  | |   | || |   | |\n    / /\\ \\  _| |_ | |   | || |___| |\n   /_/  \\_\\(_____)|_|   |_| \\______|\n______________________________________\033[0;39m\n\n"
 /** start message */
 #define SHELL_START     "Welcome to the wonderful world of Xinu!\n"
 #define SHELL_EXIT      "Shell closed.\n"  /**< exit message            */
@@ -51,6 +51,7 @@ command xsh_cat(int, char *[]);
 command xsh_clear(int, char *[]);
 command xsh_delete(int, char *[]);
 command xsh_diskstat(int, char *[]);
+command xsh_doge(void);
 command xsh_ethstat(int, char *[]);
 command xsh_exit(int, char *[]);
 command xsh_fish(int, char *[]);
@@ -58,6 +59,8 @@ command xsh_help(int, char *[]);
 command xsh_kill(int, char *[]);
 command xsh_memstat(int, char *[]);
 command xsh_ps(int, char *[]);
+command xsh_ping(ushort, char *[]);
+command xsh_pingserver(ushort, char *[]);
 command xsh_test(int, char *[]);
 
 #endif                          /* _SHELL_H_ */
