@@ -51,7 +51,7 @@ command xsh_cat(int, char *[]);
 command xsh_clear(int, char *[]);
 command xsh_delete(int, char *[]);
 command xsh_diskstat(int, char *[]);
-command xsh_doge(void);
+command xsh_doge(int);
 command xsh_ethstat(int, char *[]);
 command xsh_exit(int, char *[]);
 command xsh_fish(int, char *[]);
