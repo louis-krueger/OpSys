@@ -26,7 +26,7 @@ INDENT_FILES = $(shell find ../ -name '*.[ch]')
 
 # SHELL
 SHLL = xsh_cat.c xsh_delete.c xsh_diskstat.c xsh_doge.c xsh_test.c shell-commands.c xsh_ping.c xsh_pingserver.c
-NET  = netInit.c
+NET  = netInit.c arp_reply.c checksum.c dot2ip.c etherswap.c getip.c getmac.c icmp.c ipv4swap.c
 
 # FILE system
 FSYS = fileClose.c   fileGetChar.c  fileSeek.c fileCreate.c  fileOpen.c \

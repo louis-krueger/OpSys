@@ -38,59 +38,52 @@ int echoRequest(char *dst)
     request = (struct ethergram *)requestpkt;
     ether = (struct ethergram *)receivepkt;
     struct ethergram *epkt = NULL;
-    id = 1;
+    id = currpid;
 
     if(ether == request)
 	kprintf("xsh_ping (echorequest) ether == request");
 
-    netInit();
     for (i = 0; i < MAX_REQUESTS; i++)
-	    {
+    {
 	    
-	    // TODO: Zero out memory for receiving packets.
+	    // TODO: Zero out memory for receiving packets.	    
 	    
 	    for (length = 0; length < PKTSZ; length++)
 		receivepkt[length] = NULL;
 	
 	
-	    //  Construct an ICMP echo request packet.  (See icmpPrep() for help)
-	    	/* Assign the etherPkt to point to the passed buffer */
-	    epkt = (struct ethergram *)ether;
-	    ippkt = (struct ipv4gram *)epkt->data;
-	
-	    	/* Set up the ipv4gram portion of packet */
-	    ippkt->ver_hlen = (IP_V4 << 4);
-	    ippkt->ver_hlen += (IPv4_SIZE / 4);
-	    ippkt->tos = 0;
-	    ippkt->length = htons(REQUEST_PKTSZ - ETHER_SIZE);
-	    ippkt->id = htons(id);
-	    ippkt->froff = (IP_FLAG_DF << 13);
-	    ippkt->froff += 0;
-	    ippkt->froff = htons(ippkt->froff);
-	    ippkt->ttl = IP_TTL;
-	    ippkt->protocol = IP_ICMP;
-	    ippkt->cksum = 0;
-	    //dot2ip(nvramGet("lan_ipaddr\0"), ippkt->src);
-	    //dot2ip(dst, ippkt->dst);
-	    //ippkt->cksum = checksum((uchar *)ippkt,
-	    //                       (4 * (ippkt->ver_hlen & IP_IHL)));
-	    	/* Set up the ethergram portion of packet */
-	    //getmac(epkt->src);
-	
-	
+	    //  Construct an ICMP echo request packet.  (See icmpPrep() for help
+	   icmp = (struct icmpgram *) ((struct ipv4gram *) request->data)->data;
+	   // icmp->type = ICMP_REQUEST;
+	   // icmp->code = NULL;
+	   // icmp->cksum = NULL;
+   	   // icmp->id = id;
+	    icmp->seq = htons(i);
+	    if (icmpPrep(request, id, dst) == SYSERR)
+	    {
+	    	kprintf("xsh_ping.c (echoRequest) echoRequest - icmpPrep failed\r\n");
+		return SYSERR;
+	    }
+			    
 	    //  Write the constructed packet to the ethernet device.
-	    write(ETH0, ippkt, PKTSZ);
+	    write(ETH0, request, PKTSZ);
 	    //  Read from the ethernet device and sleep.
 	    read(ETH0, ether, PKTSZ);
 	    sleep(1000);
-	    //icmpPrint(ether, PKTSZ);
 	    //  Reply to ARP requests using arp_reply() if appropriate.
-	     
-	    //if ARP request reply
-	    //	 
-	
+	    //icmp = (struct icmpgram *) ((struct ipv4gram *) ether->data)->data;
+	    //icmp->seq = htons(icmp->seq);
+	    if (ntohs(ether->type) == ETYPE_ARP)
+	    {
+	        memcpy(request->dst, ether->src, 6);
+		memcpy(request->src, ether->dst, 6); 
+		arp_reply(request); 
+		write(ETH0, request, PKTSZ);
+		kprintf("xsh_ping.c (echoRequest) arpReply - reply packet sent\r\n");
+	    }
 	    //  Print reply packets (icmpPrint()) and keep stats.
-	    icmpPrint(ether, PKTSZ);
+	    kprintf("request: ");icmpPrint(request, PKTSZ);
+	    kprintf("ether: ");icmpPrint(ether, PKTSZ);
     } 
   
     kprintf("****end of echo request****\r\n");
@@ -119,33 +112,3 @@ command xsh_ping(ushort nargs, char *args[])
 
     return OK;
 }
-/* Decipher the reply to the echo request
- * @param *buf pointer to the ethernet pkt
- * @param length length of ethernet pkt
- *  
- *
- */
-int icmpPrint(void *buf, int length)
-{
-    struct ipv4gram *ip = NULL;
-    struct icmpgram *icmp = NULL;
-
-    ip = (struct ipv4gram *)buf;
-    icmp = (struct icmpgram *)ip->data;
-
-    printf("%d bytes from ", ntohs(ip->length));
-    printf("(%d.%d.%d.%d) ",
-           ip->src[0], ip->src[1], ip->src[2], ip->src[3]);
-    printf("icmp_seq=%d ", ntohs(icmp->seq));
-    printf("ttl=%d", ip->ttl);
-    if (ICMP_REPLY != icmp->type)
-    {
-        printf("\t(not reply)");
-    }
-
-    printf("\n");
-    return OK;
-}
-
-
-
