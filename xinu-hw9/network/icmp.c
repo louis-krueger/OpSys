@@ -98,6 +98,7 @@ int icmpPrep(void *buf, ushort id, char *dst)
  * @param *buf pointer to the ethernet pkt
  * @param length length of ethernet pkt
  */
+
 int rawPrint(void *buf, int length)
 {
     struct ethergram *ether = NULL;
@@ -105,12 +106,14 @@ int rawPrint(void *buf, int length)
     struct icmpgram *icmp = NULL;
     struct arpgram *arp = NULL;
 
-    ether = (struct ethergram *)buf;
+    ether = (struct ethergram *)(buf);
     kprintf("===ethergram===\r\n");
-    kprintf("dst: %08X\r\n", (long)ether->dst);
-    kprintf("src: %08X\r\n", (long)ether->src);
-    kprintf("type: %08X\r\n", ether->type);
-    if (ntohs(ether->type) == ETYPE_ARP)
+    kprintf("dst: %02X:%02X:%02X:%02X:%02X:%02X\r\n", ether->dst[0], ether->dst[1], ether->dst[2], ether->dst[3], ether->dst[4], ether->dst[5]);
+    kprintf("src: %02x:%02X:%02X:%02X:%02X:%02X\r\n", ether->src[0], ether->src[1], ether->src[2], ether->src[3], ether->src[4], ether->src[5]);
+   // kprintf("type: %04X\r\n", ether->type);
+    kprintf("type: %04X\r\n", ntohs(ether->type));
+   // kprintf("type: %04X\r\n", ether->type);
+    if (ether->type == ntohs(ETYPE_ARP))
     {
         kprintf("\t===arpgram===\r\n");
 	arp = (struct arpgram *)ether->data;

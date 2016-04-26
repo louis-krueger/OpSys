@@ -53,20 +53,20 @@ int echoRequest(char *dst)
 	    attempts++;	    	    
 	    // TODO: Zero out memory for receiving packets.	    
 	    for (length = 0; length < PKTSZ; length++)
-		receivepkt[length] = NULL;
+	 	receivepkt[length] = NULL;
 	    //  Construct an ICMP echo request packet.  (See icmpPrep() for help
-	   icmp = (struct icmpgram *) ((struct ipv4gram *) request->data)->data;
-	   // icmp->type = ICMP_REQUEST;
-	   // icmp->code = NULL;
-	   // icmp->cksum = NULL;
-   	   // icmp->id = id;
-	    icmp->seq = htons(i);
+	    //ippkt->data[1] = icmp;		    
+	    request->data[1] = ippkt;
+	    //icmp->type = ICMP_REQUEST;
+	    //icmp->code = NULL;
+	    //icmp->cksum = NULL;
+   	    //icmp->id = currpid;
+	    //icmp->seq = htons(i);
 	    if (icmpPrep(request, id, dst) == SYSERR)
 	    {
-	    	kprintf("xsh_ping.c (echoRequest) echoRequest - icmpPrep failed\r\n");
-		return SYSERR;
+	     	kprintf("xsh_ping.c (echoRequest) echoRequest - icmpPrep failed\r\n");
+	 	return SYSERR;
 	    }
-			    
 	    //  Write the constructed packet to the ethernet device.
 	    write(ETH0, request, PKTSZ);
 	    //  Read from the ethernet device and sleep.
@@ -75,16 +75,16 @@ int echoRequest(char *dst)
 	    //  Reply to ARP requests using arp_reply() if appropriate.
 	    //icmp = (struct icmpgram *) ((struct ipv4gram *) ether->data)->data;
 	    //icmp->seq = htons(icmp->seq);
-	    if (ntohs(ether->type) == ETYPE_ARP)
+	    if (ether->type == htons(ETYPE_ARP))
 	    {
 		arp = (struct arpgram *)ether->data;
 		kprintf("in:");rawPrint(ether, PKTSZ);//arpPrint(ether, PKTSZ);
 	        memcpy(request->dst, ether->src, ETH_ADDR_LEN);
 		memcpy(request->src, ether->dst, ETH_ADDR_LEN); 
+		request->type = htons(ETYPE_ARP);
 		arp_reply(arp);
 		kprintf("out:");rawPrint(request, PKTSZ);//arpPrint(request, PKTSZ);
-		request->data[1] = arp; 
-	//	memcpy(request->data, arp, )
+		request->data[1] = (int)arp; 
 		write(ETH0, request, PKTSZ);
 		kprintf("xsh_ping.c (echoRequest) arpReply - reply packet sent\r\n");
 	    }
@@ -93,7 +93,7 @@ int echoRequest(char *dst)
 	    //kprintf("ether: ");icmpPrint(ether, PKTSZ);
     } 
   
-    kprintf("****end of echo request****\r\n");
+    kprintf("****end of echo request attempts: %02d****\r\n", attempts);
     return OK;
 }
 
