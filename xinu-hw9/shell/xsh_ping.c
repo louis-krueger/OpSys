@@ -11,8 +11,10 @@
 
 #include <xinu.h>
 
+int arpPrint(void *buf, int length);
 int icmpPrep(void *buf, ushort id, char *dst);
 int icmpPrint(void *buf, int length);
+int rawPrint(void *buf, int length);
 
 /**
  * Provides a client that sends out a series of ping requests.
@@ -26,17 +28,20 @@ int echoRequest(char *dst)
     struct ethergram *ether, *request;
     struct ipv4gram *ippkt;
     struct icmpgram *icmp;
+    struct arpgram *arp;
     int length, i;
     int attempts, totalsent, dropped;
     ushort id, seq;
     bool endLoop;
 
+    attempts = 0;
     //totalsent = 0;
     //dropped = 0;
     //id = 0;
     //seq = 0;
     request = (struct ethergram *)requestpkt;
     ether = (struct ethergram *)receivepkt;
+    arp = NULL;
     struct ethergram *epkt = NULL;
     id = currpid;
 
@@ -45,13 +50,10 @@ int echoRequest(char *dst)
 
     for (i = 0; i < MAX_REQUESTS; i++)
     {
-	    
+	    attempts++;	    	    
 	    // TODO: Zero out memory for receiving packets.	    
-	    
 	    for (length = 0; length < PKTSZ; length++)
 		receivepkt[length] = NULL;
-	
-	
 	    //  Construct an ICMP echo request packet.  (See icmpPrep() for help
 	   icmp = (struct icmpgram *) ((struct ipv4gram *) request->data)->data;
 	   // icmp->type = ICMP_REQUEST;
@@ -75,15 +77,20 @@ int echoRequest(char *dst)
 	    //icmp->seq = htons(icmp->seq);
 	    if (ntohs(ether->type) == ETYPE_ARP)
 	    {
-	        memcpy(request->dst, ether->src, 6);
-		memcpy(request->src, ether->dst, 6); 
-		arp_reply(request); 
+		arp = (struct arpgram *)ether->data;
+		kprintf("in:");rawPrint(ether, PKTSZ);//arpPrint(ether, PKTSZ);
+	        memcpy(request->dst, ether->src, ETH_ADDR_LEN);
+		memcpy(request->src, ether->dst, ETH_ADDR_LEN); 
+		arp_reply(arp);
+		kprintf("out:");rawPrint(request, PKTSZ);//arpPrint(request, PKTSZ);
+		request->data[1] = arp; 
+	//	memcpy(request->data, arp, )
 		write(ETH0, request, PKTSZ);
 		kprintf("xsh_ping.c (echoRequest) arpReply - reply packet sent\r\n");
 	    }
 	    //  Print reply packets (icmpPrint()) and keep stats.
-	    kprintf("request: ");icmpPrint(request, PKTSZ);
-	    kprintf("ether: ");icmpPrint(ether, PKTSZ);
+	    //kprintf("request: ");icmpPrint(request, PKTSZ);
+	    //kprintf("ether: ");icmpPrint(ether, PKTSZ);
     } 
   
     kprintf("****end of echo request****\r\n");

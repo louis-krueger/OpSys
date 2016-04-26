@@ -98,6 +98,60 @@ int icmpPrep(void *buf, ushort id, char *dst)
  * @param *buf pointer to the ethernet pkt
  * @param length length of ethernet pkt
  */
+int rawPrint(void *buf, int length)
+{
+    struct ethergram *ether = NULL;
+    struct ipv4gram *ip = NULL;
+    struct icmpgram *icmp = NULL;
+    struct arpgram *arp = NULL;
+
+    ether = (struct ethergram *)buf;
+    kprintf("===ethergram===\r\n");
+    kprintf("dst: %08X\r\n", (long)ether->dst);
+    kprintf("src: %08X\r\n", (long)ether->src);
+    kprintf("type: %08X\r\n", ether->type);
+    if (ntohs(ether->type) == ETYPE_ARP)
+    {
+        kprintf("\t===arpgram===\r\n");
+	arp = (struct arpgram *)ether->data;
+	kprintf("\t arp degub here\r\n");
+	kprintf("\t=============\r\n");
+	return OK;
+    }
+    ip = (struct ipv4gram *)ether->data;
+    kprintf("\t===ipv4gram===\r\n");
+    kprintf("\tdst: %08X\r\n", (long)ip->dst);
+    kprintf("\tsrc: %08X\r\n", (long)ip->src);
+    kprintf("\tttl: %08X\r\n", ip->ttl);
+
+    icmp = (struct icmpgram *)ip->data;
+    kprintf("\t===icmpgram===\r\n");
+    kprintf("\ttype: %08X\r\n", (long)icmp->type);
+    kprintf("\tcode: %08X\r\n", (long)icmp->code);
+    kprintf("\tseq %08X\r\n", icmp->seq);
+  
+    return OK;	
+}
+int arpPrint(void *buf, int length)
+{
+    struct ethergram *ether = NULL;
+    struct arpgram *arp = NULL;
+
+    ether = (struct ethergram *)buf;
+    arp = (struct arpgram *)ether->data;
+    kprintf("\r\n======arpGram============\r\n");
+    kprintf("from: (%x:%x:%x:%x:%x:%x) \r\n",
+           ether->src[2], ether->src[3], ether->src[4], ether->src[5], ether->src[6], ether->src[7]);
+    kprintf("tpye[htype, ptype]: %08X, %08X\r\n", ntohs(arp->htype), ntohs(arp->ptype));
+    kprintf("ether type: %08X\r\n", ntohs(ether->type));
+    if (ARP_REPLY != ether->type)
+    {
+        kprintf("\t(not reply)\r\n");
+    }
+    kprintf("======================\r\n");
+    kprintf("\n");
+    return OK;
+}
 int icmpPrint(void *buf, int length)
 {
     struct ipv4gram *ip = NULL;
@@ -106,16 +160,16 @@ int icmpPrint(void *buf, int length)
     ip = (struct ipv4gram *)buf;
     icmp = (struct icmpgram *)ip->data;
 
-    printf("%d bytes from ", ntohs(ip->length));
-    printf("(%d.%d.%d.%d) ",
+    kprintf("%d bytes from ", ntohs(ip->length));
+    kprintf("(%d.%d.%d.%d) ",
            ip->src[0], ip->src[1], ip->src[2], ip->src[3]);
-    printf("icmp_seq=%d ", ntohs(icmp->seq));
-    printf("ttl=%d", ip->ttl);
+    kprintf("icmp_seq=%d ", ntohs(icmp->seq));
+    kprintf("ttl=%d", ip->ttl);
     if (ICMP_REPLY != icmp->type)
     {
-        printf("\t(not reply)");
+        printf("\t(not reply)\r\n");
     }
 
-    printf("\n");
+    kprintf("\r\n");
     return OK;
 }
