@@ -80,13 +80,12 @@ int echoRequest(char *dst)
 	    {
 		arp = (struct arpgram *)ether->data;
 		kprintf("in:");rawPrint(ether, PKTSZ);//arpPrint(ether, PKTSZ);
-	        memcpy(request->dst, ether->src, ETH_ADDR_LEN);
-		getmac(request->src); 
-		request->type = htons(ETYPE_ARP);
+		ether_swap(ether);
+		ether->type = htons(ETYPE_ARP);
 		arp_reply(arp);
-		request->data[1] = arp; 
-		kprintf("out:");rawPrint(request, PKTSZ);//arpPrint(request, PKTSZ);
-		write(ETH0, request, PKTSZ);
+		ether->data[1] = arp; 
+		kprintf("out:");rawPrint(ether, PKTSZ);//arpPrint(request, PKTSZ);
+		write(ETH0, ether, PKTSZ);
 		kprintf("xsh_ping.c (echoRequest) arpReply - reply packet sent\r\n");
 	    }
 	    //  Print reply packets (icmpPrint()) and keep stats.

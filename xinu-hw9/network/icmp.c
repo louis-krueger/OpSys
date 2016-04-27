@@ -115,19 +115,37 @@ int rawPrint(void *buf, int length)
    // kprintf("type: %04X\r\n", ether->type);
     if (ether->type == ntohs(ETYPE_ARP))
     {
-        kprintf("\t===arpgram===\r\n");
-	arp = (struct arpgram *)ether->data;
-	kprintf("\tHardware Type: %04X\r\n", arp->htype);
-	kprintf("\tProtocol Type: %04X\r\n", arp->ptype);
-	kprintf("\tHardware addr length: %02X\r\n", arp->hlen);
-	kprintf("\tProtocal addr length: %02X\r\n", arp->plen);
-	kprintf("\tOperation: %04X\r\n", arp->oper);
-	kprintf("\tSender's HW addr: %02X:%02X:%02X:%02X:%02X:%02X\r\n", arp->sha[0], arp->sha[1], arp->sha[2], arp->sha[3], arp->sha[4], arp->sha[5]);
-	kprintf("\tSender's protocol addr: %d.%d.%d.%d\r\n", arp->spa[0], arp->spa[1], arp->spa[2], arp->spa[3]);
-	kprintf("\tTarget Hardware addr: %02X:%02X:%02X:%02X:%02X:%02X\r\n", arp->tha[0], arp->tha[1], arp->tha[2], arp->tha[3], arp->tha[4], arp->tha[5]);
-	kprintf("\tTarget protocol addr: %d.%d.%d.%d\r\n", arp->tpa[0], arp->tpa[1], arp->tpa[2], arp->tpa[3]);     
-        kprintf("\t=============\r\n");
-	return OK;
+    arp = (struct arpgram *)ether->data;
+    if ((arp->oper == ARP_REQUEST) | (arp->oper == ARP_REPLY))
+    {
+    	kprintf("\t===arpgram===\r\n");
+    	kprintf("\tHardware Type: %04X\r\n", arp->htype);
+    	kprintf("\tProtocol Type: %04X\r\n", arp->ptype);
+    	kprintf("\tHardware addr length: %02X\r\n", arp->hlen);
+    	kprintf("\tProtocal addr length: %02X\r\n", arp->plen);
+    	kprintf("\tOperation: %04X\r\n", arp->oper);
+    	kprintf("\tSender's HW addr: %02X:%02X:%02X:%02X:%02X:%02X\r\n", arp->sha[0], arp->sha[1], arp->sha[2], arp->sha[3], arp->sha[4], arp->sha[5]);
+    	kprintf("\tSender's protocol addr: %d.%d.%d.%d\r\n", arp->spa[0], arp->spa[1], arp->spa[2], arp->spa[3]);
+    	kprintf("\tTarget Hardware addr: %02X:%02X:%02X:%02X:%02X:%02X\r\n", arp->tha[0], arp->tha[1], arp->tha[2], arp->tha[3], arp->tha[4], arp->tha[5]);
+    	kprintf("\tTarget protocol addr: %d.%d.%d.%d\r\n", arp->tpa[0], arp->tpa[1], arp->tpa[2], arp->tpa[3]);
+    	kprintf("\t==BIG+ENDIAN==\r\n");
+    	return OK;
+    }
+    else
+    {
+    	kprintf("\t===arpgram===\r\n");
+    	kprintf("\tHardware Type: %04X\r\n", ntohs(arp->htype));
+    	kprintf("\tProtocol Type: %04X\r\n", ntohs(arp->ptype));
+    	kprintf("\tHardware addr length: %02X\r\n", arp->hlen);
+    	kprintf("\tProtocal addr length: %02X\r\n", arp->plen);
+    	kprintf("\tOperation: %04X\r\n", ntohs(arp->oper));
+    	kprintf("\tSender's HW addr: %02X:%02X:%02X:%02X:%02X:%02X\r\n", arp->sha[0], arp->sha[1], arp->sha[2], arp->sha[3], arp->sha[4], arp->sha[5]);
+    	kprintf("\tSender's protocol addr: %d.%d.%d.%d\r\n", arp->spa[0], arp->spa[1], arp->spa[2], arp->spa[3]);
+    	kprintf("\tTarget Hardware addr: %02X:%02X:%02X:%02X:%02X:%02X\r\n", arp->tha[0], arp->tha[1], arp->tha[2], arp->tha[3], arp->tha[4], arp->tha[5]);
+    	kprintf("\tTarget protocol addr: %d.%d.%d.%d\r\n", arp->tpa[0], arp->tpa[1], arp->tpa[2], arp->tpa[3]);
+    	kprintf("\t==LIL+ENDIAN==\r\n");
+    	return OK;
+    }
     }
     ip = (struct ipv4gram *)ether->data;
     kprintf("\t===ipv4gram===\r\n");
