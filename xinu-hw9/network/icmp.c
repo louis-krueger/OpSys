@@ -117,43 +117,42 @@ int rawPrint(void *buf, int length)
     {
         kprintf("\t===arpgram===\r\n");
 	arp = (struct arpgram *)ether->data;
-	kprintf("\t arp degub here\r\n");
-	kprintf("\t=============\r\n");
+	kprintf("\tHardware Type: %04X\r\n", arp->htype);
+	kprintf("\tProtocol Type: %04X\r\n", arp->ptype);
+	kprintf("\tHardware addr length: %02X\r\n", arp->hlen);
+	kprintf("\tProtocal addr length: %02X\r\n", arp->plen);
+	kprintf("\tOperation: %04X\r\n", arp->oper);
+	kprintf("\tSender's HW addr: %02X:%02X:%02X:%02X:%02X:%02X\r\n", arp->sha[0], arp->sha[1], arp->sha[2], arp->sha[3], arp->sha[4], arp->sha[5]);
+	kprintf("\tSender's protocol addr: %d.%d.%d.%d\r\n", arp->spa[0], arp->spa[1], arp->spa[2], arp->spa[3]);
+	kprintf("\tTarget Hardware addr: %02X:%02X:%02X:%02X:%02X:%02X\r\n", arp->tha[0], arp->tha[1], arp->tha[2], arp->tha[3], arp->tha[4], arp->tha[5]);
+	kprintf("\tTarget protocol addr: %d.%d.%d.%d\r\n", arp->tpa[0], arp->tpa[1], arp->tpa[2], arp->tpa[3]);     
+        kprintf("\t=============\r\n");
 	return OK;
     }
     ip = (struct ipv4gram *)ether->data;
     kprintf("\t===ipv4gram===\r\n");
-    kprintf("\tdst: %08X\r\n", (long)ip->dst);
-    kprintf("\tsrc: %08X\r\n", (long)ip->src);
-    kprintf("\tttl: %08X\r\n", ip->ttl);
+    kprintf("\tVersion & Header length : %04X\r\n", ip->ver_hlen);
+    kprintf("\tTOS? : %04X\r\n", ip->tos);
+    kprintf("\tLength : %04X\r\n", ip->length);
+    kprintf("\tIdentification : %04X\r\n", ip->id);
+    kprintf("\tFragment offset : %04X\r\n", ip->froff); 
+    kprintf("\tTime To Live : %04X\r\n", ip->ttl);
+    kprintf("\tProtocol : %04X\r\n", ip->protocol);
+    kprintf("\tChecksum : %04X\r\n", ip->cksum);
+    kprintf("\tSource IP : %d.%d.%d.%d\r\n", ip->src[0], ip->src[1], ip->src[2], ip->src[3]);
+    kprintf("\tDest IP : %d.%d.%d.%d\r\n", ip->dst[0], ip->dst[1], ip->dst[2], ip->dst[3]);
+    kprintf("\t=============\r\n");
 
     icmp = (struct icmpgram *)ip->data;
-    kprintf("\t===icmpgram===\r\n");
-    kprintf("\ttype: %08X\r\n", (long)icmp->type);
-    kprintf("\tcode: %08X\r\n", (long)icmp->code);
-    kprintf("\tseq %08X\r\n", icmp->seq);
+    kprintf("\t\t===icmpgram===\r\n");
+    kprintf("\t\tType : %02X\r\n", icmp->type);
+    kprintf("\t\tCode : %02X\r\n", icmp->code);
+    kprintf("\t\tChecksum : %04X\r\n", icmp->cksum);
+    kprintf("\t\tID : %04X\r\n", icmp->id);
+    kprintf("\t\tSequence : %04X\r\n", icmp->seq);
+    kprintf("\t\t=============\r\n");
   
     return OK;	
-}
-int arpPrint(void *buf, int length)
-{
-    struct ethergram *ether = NULL;
-    struct arpgram *arp = NULL;
-
-    ether = (struct ethergram *)buf;
-    arp = (struct arpgram *)ether->data;
-    kprintf("\r\n======arpGram============\r\n");
-    kprintf("from: (%x:%x:%x:%x:%x:%x) \r\n",
-           ether->src[2], ether->src[3], ether->src[4], ether->src[5], ether->src[6], ether->src[7]);
-    kprintf("tpye[htype, ptype]: %08X, %08X\r\n", ntohs(arp->htype), ntohs(arp->ptype));
-    kprintf("ether type: %08X\r\n", ntohs(ether->type));
-    if (ARP_REPLY != ether->type)
-    {
-        kprintf("\t(not reply)\r\n");
-    }
-    kprintf("======================\r\n");
-    kprintf("\n");
-    return OK;
 }
 int icmpPrint(void *buf, int length)
 {

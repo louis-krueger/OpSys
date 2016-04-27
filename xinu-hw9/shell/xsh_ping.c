@@ -53,15 +53,16 @@ int echoRequest(char *dst)
 	    attempts++;	    	    
 	    // TODO: Zero out memory for receiving packets.	    
 	    for (length = 0; length < PKTSZ; length++)
-	 	receivepkt[length] = NULL;
+	 	receivepkt[length] = htons(NULL);
 	    //  Construct an ICMP echo request packet.  (See icmpPrep() for help
 	    //ippkt->data[1] = icmp;		    
-	    request->data[1] = ippkt;
-	    //icmp->type = ICMP_REQUEST;
+	    //icmp->type = htons(ICMP_REQUEST);
 	    //icmp->code = NULL;
 	    //icmp->cksum = NULL;
-   	    //icmp->id = currpid;
+   	    //icmp->id = 1337;
 	    //icmp->seq = htons(i);
+	    //ippkt->data[1] = icmp;
+	    //request->data[1] = ippkt;
 	    if (icmpPrep(request, id, dst) == SYSERR)
 	    {
 	     	kprintf("xsh_ping.c (echoRequest) echoRequest - icmpPrep failed\r\n");
@@ -80,11 +81,11 @@ int echoRequest(char *dst)
 		arp = (struct arpgram *)ether->data;
 		kprintf("in:");rawPrint(ether, PKTSZ);//arpPrint(ether, PKTSZ);
 	        memcpy(request->dst, ether->src, ETH_ADDR_LEN);
-		memcpy(request->src, ether->dst, ETH_ADDR_LEN); 
+		getmac(request->src); 
 		request->type = htons(ETYPE_ARP);
 		arp_reply(arp);
+		request->data[1] = arp; 
 		kprintf("out:");rawPrint(request, PKTSZ);//arpPrint(request, PKTSZ);
-		request->data[1] = (int)arp; 
 		write(ETH0, request, PKTSZ);
 		kprintf("xsh_ping.c (echoRequest) arpReply - reply packet sent\r\n");
 	    }
