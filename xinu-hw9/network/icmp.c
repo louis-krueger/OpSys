@@ -6,6 +6,7 @@
 
 #include <xinu.h>
 
+//#define DEBUG
 #define NARP_ENT 27
 char *arp_map[NARP_ENT][2] = {
     {"192.168.6.10", "52:54:03:02:B1:06"},      // morbius
@@ -101,6 +102,7 @@ int icmpPrep(void *buf, ushort id, char *dst)
 
 int rawPrint(void *buf, int length)
 {
+#ifdef DEBUG
     struct ethergram *ether = NULL;
     struct ipv4gram *ip = NULL;
     struct icmpgram *icmp = NULL;
@@ -151,27 +153,28 @@ int rawPrint(void *buf, int length)
     kprintf("\t===ipv4gram===\r\n");
     kprintf("\tVersion & Header length : %04X\r\n", ip->ver_hlen);
     kprintf("\tTOS? : %04X\r\n", ip->tos);
-    kprintf("\tLength : %04X\r\n", ip->length);
-    kprintf("\tIdentification : %04X\r\n", ip->id);
-    kprintf("\tFragment offset : %04X\r\n", ip->froff); 
-    kprintf("\tTime To Live : %04X\r\n", ip->ttl);
+    kprintf("\tLength : %04X\r\n", ntohs(ip->length));
+    kprintf("\tIdentification : %04X\r\n", ntohs(ip->id));
+    kprintf("\tFragment offset : %04X\r\n", ntohs(ip->froff)); 
+    kprintf("\tTime To Live : %d\r\n", ip->ttl);
     kprintf("\tProtocol : %04X\r\n", ip->protocol);
-    kprintf("\tChecksum : %04X\r\n", ip->cksum);
+    kprintf("\tChecksum : %04X\r\n", ntohs(ip->cksum));
     kprintf("\tSource IP : %d.%d.%d.%d\r\n", ip->src[0], ip->src[1], ip->src[2], ip->src[3]);
     kprintf("\tDest IP : %d.%d.%d.%d\r\n", ip->dst[0], ip->dst[1], ip->dst[2], ip->dst[3]);
     kprintf("\t=============\r\n");
 
     icmp = (struct icmpgram *)ip->data;
     kprintf("\t\t===icmpgram===\r\n");
-    kprintf("\t\tType : %02X\r\n", icmp->type);
-    kprintf("\t\tCode : %02X\r\n", icmp->code);
-    kprintf("\t\tChecksum : %04X\r\n", icmp->cksum);
-    kprintf("\t\tID : %04X\r\n", icmp->id);
-    kprintf("\t\tSequence : %04X\r\n", icmp->seq);
+    kprintf("\t\tType : %04X\r\n", icmp->type);
+    kprintf("\t\tCode : %04X\r\n", icmp->code);
+    kprintf("\t\tChecksum : %04X\r\n", ntohs(icmp->cksum));
+    kprintf("\t\tID : %04X\r\n", ntohs(icmp->id));
+    kprintf("\t\tSequence : %04X\r\n", ntohs(icmp->seq));
     kprintf("\t\t=============\r\n");
-  
+#endif  
     return OK;	
 }
+
 int icmpPrint(void *buf, int length)
 {
     struct ipv4gram *ip = NULL;

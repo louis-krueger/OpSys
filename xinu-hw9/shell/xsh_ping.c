@@ -11,7 +11,6 @@
 
 #include <xinu.h>
 
-int arpPrint(void *buf, int length);
 int icmpPrep(void *buf, ushort id, char *dst);
 int icmpPrint(void *buf, int length);
 int rawPrint(void *buf, int length);
@@ -41,12 +40,9 @@ int echoRequest(char *dst)
     //seq = 0;
     request = (struct ethergram *)requestpkt;
     ether = (struct ethergram *)receivepkt;
-    arp = NULL;
-    struct ethergram *epkt = NULL;
-    id = currpid;
 
-    if(ether == request)
-	kprintf("xsh_ping (echorequest) ether == request");
+    //if(ether == request)
+	//kprintf("xsh_ping (echorequest) ether == request");
 
     for (i = 0; i < MAX_REQUESTS; i++)
     {
@@ -55,42 +51,59 @@ int echoRequest(char *dst)
 	    for (length = 0; length < PKTSZ; length++)
 	 	receivepkt[length] = htons(NULL);
 	    //  Construct an ICMP echo request packet.  (See icmpPrep() for help
-	    //ippkt->data[1] = icmp;		    
-	    //icmp->type = htons(ICMP_REQUEST);
-	    //icmp->code = NULL;
-	    //icmp->cksum = NULL;
-   	    //icmp->id = 1337;
-	    //icmp->seq = htons(i);
-	    //ippkt->data[1] = icmp;
-	    //request->data[1] = ippkt;
-	    if (icmpPrep(request, id, dst) == SYSERR)
+	    if (icmpPrep(request, currpid, dst) == SYSERR)
 	    {
-	     	kprintf("xsh_ping.c (echoRequest) echoRequest - icmpPrep failed\r\n");
+	     	//kprintf("xsh_ping.c (echoRequest) icmpPrep(request, currpid, dst) - icmpPrep failed\r\n");
 	 	return SYSERR;
 	    }
+	    ippkt = (struct ipv4gram *)request->data;
+	    icmp = (struct icmpgram *)ippkt->data;
+	    icmp->type = ICMP_REQUEST;
+	    icmp->code = (0x0 << 4);
+ 	    icmp->cksum = htons(checksum((uchar *)icmp, 16)); //32 estimated, needs to be dynamic
+   	    icmp->id = htons(currpid);
+	    icmp->seq = htons(i);
+	    //ippkt->data[1] = icmp;		    
+	    //request->data[1] = ippkt;
 	    //  Write the constructed packet to the ethernet device.
-	    write(ETH0, request, PKTSZ);
-	    //  Read from the ethernet device and sleep.
+	    //kprintf("ping:");rawPrint(request, PKTSZ);//arpPrint(ether, PKTSZ);
+	    write(ETH0, request, REQUEST_PKTSZ);
+	    //  Read from the ethernet device and sleep. 
 	    read(ETH0, ether, PKTSZ);
 	    sleep(1000);
-	    //  Reply to ARP requests using arp_reply() if appropriate.
-	    //icmp = (struct icmpgram *) ((struct ipv4gram *) ether->data)->data;
-	    //icmp->seq = htons(icmp->seq);
-	    if (ether->type == htons(ETYPE_ARP))
-	    {
-		arp = (struct arpgram *)ether->data;
-		kprintf("in:");rawPrint(ether, PKTSZ);//arpPrint(ether, PKTSZ);
-		ether_swap(ether);
-		ether->type = htons(ETYPE_ARP);
-		arp_reply(arp);
-		ether->data[1] = arp; 
-		kprintf("out:");rawPrint(ether, PKTSZ);//arpPrint(request, PKTSZ);
-		write(ETH0, ether, PKTSZ);
-		kprintf("xsh_ping.c (echoRequest) arpReply - reply packet sent\r\n");
-	    }
-	    //  Print reply packets (icmpPrint()) and keep stats.
-	    //kprintf("request: ");icmpPrint(request, PKTSZ);
-	    //kprintf("ether: ");icmpPrint(ether, PKTSZ);
+	    while((ether->type != htons(ETYPE_IPv4)))
+	    {  
+		//  Reply to ARP requests using arp_reply() if appropriate.
+		if (ether->type == htons(ETYPE_ARP))
+	    	{
+		    //kprintf("in:");rawPrint(ether, PKTSZ);//arpPrint(ether, PKTSZ);
+		    arp = (struct arpgram *)ether->data;
+		    if (SYSERR == arp_reply(arp))
+		    {
+			//kprintf("xsh_ping.c (echoRequest) arp_reply(buf *) - arp_request not for us\r\n");	
+		//	return SYSERR;
+		    }
+		    else
+		    {
+			arp->htype = 1;
+			ether_swap(ether);
+			ether->type = htons(ETYPE_ARP);
+			ether->data[1] = arp;
+			//kprintf("out:");rawPrint(ether, PKTSZ);//arpPrint(request, PKTSZ);
+			write(ETH0, ether, ARP_PKTSZ);
+			//kprintf("xsh_ping.c (echoRequest) arpReply - reply packet sent\r\n");
+	    	    }
+	    	}	
+	        read(ETH0, ether, PKTSZ);
+		sleep(1000);
+	    }	    
+		//else //if((dst[0] == ether->src[0]) & (dst[1] == ether->src[1])) 
+	    	//  Print reply packets (icmpPrint()) and keep stats.
+	    	//kprintf("request: ");icmpPrint(request, PKTSZ); 
+	 	//kprintf("pong: ");
+		icmpPrint(ether->data, PKTSZ);
+    		//kprintf("rawether: ");rawPrint(ether, PKTSZ); 
+	
     } 
   
     kprintf("****end of echo request attempts: %02d****\r\n", attempts);
