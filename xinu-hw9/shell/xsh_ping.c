@@ -75,10 +75,10 @@ int echoRequest(char *dst)
 	    sleep(1000); 
             //  Read from the ethernet device and sleep. 
 	    
-	    while((ether->type != htons(ETYPE_IPv4)))
-	    while((length = read(ETH0, (void *) ether, REQUEST_PKTSZ)) == 0);
-	    while(ether->type != ntohs(ETYPE_IPv4) & (attempts < MAX_READ_ATTEMPTS))
+	    endLoop = 0;
+	    while((!endLoop) && (attempts < MAX_READ_ATTEMPTS))
 	    {  
+	        while((length = read(ETH0, ether, REQUEST_PKTSZ)) == 0);
 		attempts++;
 		//  Reply to ARP requests using arp_reply() if appropriate.
 		if (ether->type == htons(ETYPE_ARP))
@@ -94,18 +94,24 @@ int echoRequest(char *dst)
 			}
 			else
 			{
-	    	        write(ETH0, ether, length);
+	    	        	write(ETH0, ether, length);
 			}
 		    //kprintf("out:");rawPrint(ether, PKTSZ);//arpPrint(request, PKTSZ);
 		    //kprintf("xsh_ping.c (echoRequest) arpReply - reply packet sent\r\n");
 		    }
-	    	}	
-		sleep(1000);
-	        read(ETH0, ether, REQUEST_PKTSZ);
+	    	}
+	        if(ether->type == htons(ETYPE_IPv4))
+		{
+	    		ippkt = (struct ipv4gram *)ether->data;	    
+	    		if (ippkt->protocol == IP_ICMP)
+			{
+				icmp = (struct icmpgram *)ippkt->data;
+				if (icmp->type == ntohs(ICMP_REPLY))
+					endLoop = 1;
+			}
+		}
 	    }
-	    ippkt = (struct ipv4gram *)ether->data;	    
-	    icmp = (struct icmpgram *)ippkt->data;
-	    if((icmp->type == ICMP_REPLY) & (icmp->id == id) & (icmp->seq == seq))
+	    if((icmp->type == ICMP_REPLY))
 	    	icmpPrint(ether->data, ntohs(ippkt->length));
     	    else
 		dropped++;
