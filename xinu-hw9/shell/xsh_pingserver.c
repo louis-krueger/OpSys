@@ -33,30 +33,24 @@ process echoReply(void)
         //  write(ETH0, (void *)packet, length);
         if (ether->type == htons(ETYPE_ARP))
 	{
-		kprintf("arpreply entered\r\n");
 		arp = (struct arpgram *)ether->data;
-		if (SYSERR == arp_reply(arp))
-		{
-			kprintf("syserr\r\n");
-		}
-		else
-		{
-			ether_swap(ether);
-			ether->type = htons(ETYPE_ARP);
-			ether->data[1] = arp;
-			write(ETH0, ether, ARP_PKTSZ);
-		}
+		arp_reply(arp);
+		ether_swap(ether);
+		write(ETH0, packet, length);
 	}
 	else if (ether->type == htons(ETYPE_IPv4))
 	{
-		kprintf("ipv4reply entered\r\n");
 		ipgram = (struct ipv4gram *)ether->data;
 		icmp = (struct icmpgram *)ipgram->data;
-		icmpPrep(ether, currpid, ether->dst);
-		ether_swap(ether);
-		ether->type = htons(ETYPE_IPv4);
-		icmp->type = htons(ICMP_REPLY);
-		write(ETH0, ether, PKTSZ);
+		if ((ipgram->protocol == IP_ICMP) && (icmp->type == ICMP_REQUEST))
+		{
+			ether_swap(ether);
+			ipv4_swap(ipgram, ntohs(ipgram->length));
+			icmp->type = htons(ICMP_REPLY);
+			icmp->cksum = 0;
+			icmp->cksum = checksum(icmp, length - ETHER_SIZE - IPv4_SIZE);
+			write(ETH0, packet, length);
+		}
 	}
     }
 

@@ -77,9 +77,9 @@ int echoRequest(char *dst)
 	    
 	    endLoop = 0;
 	    while((!endLoop) && (attempts < MAX_READ_ATTEMPTS))
-	    {  
-	        while((length = read(ETH0, ether, REQUEST_PKTSZ)) == 0);
-		attempts++;
+	    {   
+		while((length = read(ETH0, ether, REQUEST_PKTSZ)) == 0)
+			attempts++;
 		//  Reply to ARP requests using arp_reply() if appropriate.
 		if (ether->type == htons(ETYPE_ARP))
 	    	{
@@ -102,6 +102,7 @@ int echoRequest(char *dst)
 	    	}
 	        if(ether->type == htons(ETYPE_IPv4))
 		{
+			//rawPrint(ether, PKTSZ);
 	    		ippkt = (struct ipv4gram *)ether->data;	    
 	    		if (ippkt->protocol == IP_ICMP)
 			{
@@ -114,7 +115,10 @@ int echoRequest(char *dst)
 	    if((icmp->type == ICMP_REPLY))
 	    	icmpPrint(ether->data, ntohs(ippkt->length));
     	    else
+	    {
+	//	rawPrint(ether, PKTSZ);
 		dropped++;
+	    }
     } 
   
     kprintf("Dropped %d packets of %d all requests sent.\r\n", dropped, totalsent);

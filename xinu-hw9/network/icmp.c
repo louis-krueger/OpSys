@@ -6,7 +6,7 @@
 
 #include <xinu.h>
 
-//#define DEBUG
+#define DEBUG
 #define NARP_ENT 27
 char *arp_map[NARP_ENT][2] = {
     {"192.168.6.10", "52:54:03:02:B1:06"},      // morbius
