@@ -70,7 +70,6 @@ int icmpPrep(void *buf, ushort id, char *dst)
     ippkt->cksum = checksum((uchar *)ippkt,
                             (4 * (ippkt->ver_hlen & IP_IHL)));
 
-
     /* Set up the ethergram portion of packet */
     getmac(epkt->src);
 
@@ -158,7 +157,7 @@ int rawPrint(void *buf, int length)
     kprintf("\tFragment offset : %04X\r\n", ntohs(ip->froff)); 
     kprintf("\tTime To Live : %d\r\n", ip->ttl);
     kprintf("\tProtocol : %04X\r\n", ip->protocol);
-    kprintf("\tChecksum : %04X\r\n", ntohs(ip->cksum));
+    kprintf("\tChecksum : %04X\r\n", ip->cksum);
     kprintf("\tSource IP : %d.%d.%d.%d\r\n", ip->src[0], ip->src[1], ip->src[2], ip->src[3]);
     kprintf("\tDest IP : %d.%d.%d.%d\r\n", ip->dst[0], ip->dst[1], ip->dst[2], ip->dst[3]);
     kprintf("\t=============\r\n");
@@ -167,7 +166,7 @@ int rawPrint(void *buf, int length)
     kprintf("\t\t===icmpgram===\r\n");
     kprintf("\t\tType : %04X\r\n", icmp->type);
     kprintf("\t\tCode : %04X\r\n", icmp->code);
-    kprintf("\t\tChecksum : %04X\r\n", ntohs(icmp->cksum));
+    kprintf("\t\tChecksum : %04X\r\n", icmp->cksum);
     kprintf("\t\tID : %04X\r\n", ntohs(icmp->id));
     kprintf("\t\tSequence : %04X\r\n", ntohs(icmp->seq));
     kprintf("\t\t=============\r\n");

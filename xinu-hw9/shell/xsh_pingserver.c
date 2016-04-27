@@ -16,6 +16,7 @@ process echoReply(void)
     struct ethergram *ether;
     struct ipv4gram *ipgram;
     struct icmpgram *icmp;
+    struct arpgram *arp;
     int length;
 
     ether = (struct ethergram *)packet;
@@ -25,13 +26,38 @@ process echoReply(void)
     while (TRUE)
     {
         bzero(ether, PKTSZ);
-
-        while ((length = read(ETH0, (void *)ether, PKTSZ)) == 0)
-            ;
+        while ((length = read(ETH0, (void *)ether, PKTSZ)) == 0);
 
         // TODO: Decode and respond to ARP Request and ICMP Echo Requests.
         //  Replies can be sent with
         //  write(ETH0, (void *)packet, length);
+        if (ether->type == htons(ETYPE_ARP))
+	{
+		kprintf("arpreply entered\r\n");
+		arp = (struct arpgram *)ether->data;
+		if (SYSERR == arp_reply(arp))
+		{
+			kprintf("syserr\r\n");
+		}
+		else
+		{
+			ether_swap(ether);
+			ether->type = htons(ETYPE_ARP);
+			ether->data[1] = arp;
+			write(ETH0, ether, ARP_PKTSZ);
+		}
+	}
+	else if (ether->type == htons(ETYPE_IPv4))
+	{
+		kprintf("ipv4reply entered\r\n");
+		ipgram = (struct ipv4gram *)ether->data;
+		icmp = (struct icmpgram *)ipgram->data;
+		icmpPrep(ether, currpid, ether->dst);
+		ether_swap(ether);
+		ether->type = htons(ETYPE_IPv4);
+		icmp->type = htons(ICMP_REPLY);
+		write(ETH0, ether, PKTSZ);
+	}
     }
 
     return 0;
