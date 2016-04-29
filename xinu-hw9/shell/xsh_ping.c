@@ -112,7 +112,7 @@ int echoRequest(char *dst)
 			}
 		}
 	    }
-	    if((icmp->type == ICMP_REPLY))
+	    if((icmp->type == ICMP_REPLY) && (ippkt->ttl > 0) && (icmp->id == id) && (icmp->seq == seq))
 	    	icmpPrint(ether->data, ntohs(ippkt->length));
     	    else
 	    {
