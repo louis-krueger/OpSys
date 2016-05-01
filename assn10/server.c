@@ -13,7 +13,7 @@
 #define CLOSE_LEN 5
 #define MAX_USERS 5
 #define MAX_USERNAME_LEN 16
-#define BUF_SIZE 500
+#define BUF_SIZE 1000
 
 int isNewClient(struct sockaddr_in, int, struct sockaddr_in [], int [], int);
 void removeClient(struct sockaddr_in, int, struct sockaddr_in [], int [], int);
@@ -86,7 +86,8 @@ int main(int argc, char *argv[])
 		}
 		buf[nread] = '\0';
 		for (i = 0; i < nusers; i++)
-			sendto(sockfd, buf, nread, 0, (struct sockaddr *) &their_addr[i], their_addr_len[i]);
+			if (0 != memcmp(&their_addr[i], &temp_addr, sizeof(struct sockaddr_in)))
+				sendto(sockfd, buf, nread, 0, (struct sockaddr *) &their_addr[i], their_addr_len[i]);
 		printf("%s", buf);
 	}
 }
