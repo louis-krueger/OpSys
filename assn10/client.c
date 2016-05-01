@@ -21,8 +21,9 @@
 int main(int argc, char *argv[])
 {
         /* DATA INITILIZATION */
-        int sockfd, myport, nread, their_addr_len, pid, c, nout;
-        struct sockaddr_in my_addr, their_addr;
+        int sockfd, serv_port, nread, pid, c, nout;
+        struct sockaddr_in serv_addr;
+	struct hostent *server;
         char buf_in[BUF_SIZE], name[MAX_USERNAME_LEN], buf_out[BUF_SIZE];
         /* END OF DATA INITILIZATION */
         /* ERROR CHECKING */
@@ -32,33 +33,25 @@ int main(int argc, char *argv[])
                 exit(EXIT_FAILURE);
         }
         /* END OF ERROR CHECKING */
-	strcpy(name, argv[3]);
         /* PORT SET UP */
-	//printf("Resolved host name: %s\r\n", hostname(argv[1]));
-        myport = atoi (argv[2]);
+        serv_port = atoi(argv[2]);
         sockfd = socket (AF_INET, SOCK_DGRAM, 0);
-        my_addr.sin_family = AF_INET;
-        my_addr.sin_port = htons (myport);
-        my_addr.sin_addr.s_addr = INADDR_ANY;
-        memset (&(my_addr.sin_zero), '\0', 8);
-        /* END OF PORT SET UP */
-        if (bind (sockfd, (struct sockaddr *) &my_addr, sizeof (struct sockaddr)))
-        {
-                close (sockfd);
-                fprintf (stderr, "Failed to bind socket!\n");
-                exit(EXIT_FAILURE);
-        }
-        else
-        {
-                printf ("Server listening on port %d\n", myport);
-        }
-	their_addr_len = sizeof (struct sockaddr_in);
-	if (getnameinfo((struct sockaddr *) &their_addr, their_addr_len, argv[1], sizeof(argv[1]), 0, 0, 0 ))
+	server = gethostbyname(argv[1]);
+	if (server == NULL)
 	{
-		close(sockfd);
-		fprintf (stderr, "Failed to something!\n");
-                exit(EXIT_FAILURE);
-	}	
+		fprintf(stderr, "Failed to find server!\r\n");
+		exit(EXIT_FAILURE);
+	}
+	bzero((char *) &serv_addr, sizeof(serv_addr));
+   	serv_addr.sin_family = AF_INET;
+   	bcopy((char *)server->h_addr, (char *)&serv_addr.sin_addr.s_addr, server->h_length);
+   	serv_addr.sin_port = htons(serv_port);
+   	if (connect(sockfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) < 0) 
+	{
+      		fprintf(stderr, "Failed to connect to server!\r\n");
+      		exit(EXIT_FAILURE);
+   	}
+        /* END OF PORT SET UP */
 	if ((pid = fork()) < 0)
 	{
 		printf("Failed to fork!\r\n");
@@ -66,7 +59,8 @@ int main(int argc, char *argv[])
 	}
 	if (pid == 0)
 	{
-		printf("IO PROCESS\r\n");
+		strcpy(name, argv[3]);
+		write(sockfd, name, sizeof(name));
 		nout = 0;
 		while (((c = getchar()) != EOF))
 		{
@@ -76,19 +70,16 @@ int main(int argc, char *argv[])
 			{
 				buf_out[nout] = '\0';
 				nout++;
-				printf("sending\r\n");
-				sendto(sockfd, buf_out, nout, 0, (struct sockaddr *) &their_addr, their_addr_len);
+				write(sockfd, buf_out, nout);
 				nout = 0;
 			}
 		}
 	}
 	else
 	{
-		printf("READING PROCESS\r\n");
 		while(1)
 		{
-			nread = recvfrom(sockfd, buf_in, BUF_SIZE, 0,
-                        	(struct sockaddr *) &their_addr, &their_addr_len);
+			nread = read(sockfd, buf_in, BUF_SIZE);
 			if (nread == 0)
                         	continue;
 			buf_in[nread] = '\0';
@@ -96,19 +87,3 @@ int main(int argc, char *argv[])
 		}
 	}
 }
-/*
-char* hostname(char *hostname)
-{
-	char *ip;
-	struct hostent *he;
-	struct in_addr **addr_list;
-	int i;
-	if ((he = gethostbyname(hostname)) == NULL)
-		return NULL;
-	addr_list = (struct in_addr **) he->h_addr_list;
-	for (i = 0; addr_list[i] != NULL; i++)
-	{
-		strcpy(ip, inet_ntoa(*addr_list[i]));
-	}
-	return ip;
-} */

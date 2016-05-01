@@ -9,8 +9,6 @@
 #include <unistd.h>
 #include <netdb.h>
 
-#define EXIT_LEN 4
-#define CLOSE_LEN 5
 #define MAX_USERS 5
 #define MAX_USERNAME_LEN 16
 #define BUF_SIZE 1000
@@ -21,9 +19,10 @@ void removeClient(struct sockaddr_in, int, struct sockaddr_in [], int [], int);
 int main(int argc, char *argv[])
 {
 	/* DATA INITILIZATION */
-	int sockfd, myport, nread, temp_addr_len, their_addr_len[MAX_USERS], i, nusers = 0;
+	int sockfd, myport, nread, temp_addr_len, their_addr_len[MAX_USERS], i, nusers = 0, current;
   	struct sockaddr_in my_addr, temp_addr, their_addr[MAX_USERS];
-  	char buf[BUF_SIZE], exitS[] = "exit", closeS[] = "close", denyS[] = "Sorry the chat server is full.\r\n";
+  	char buf[BUF_SIZE], denyS[] = "Sorry the chat server is full.\r\n", 
+		welcomeS[] = " has entered the chat!\r\n\0";
 	char users[MAX_USERS][MAX_USERNAME_LEN];
 	/* END OF DATA INITILIZATION */
 	/* ERROR CHECKING */
@@ -64,31 +63,54 @@ int main(int argc, char *argv[])
 			{
 				their_addr[nusers] = temp_addr;
 				their_addr_len[nusers] = temp_addr_len;
+				strcpy(users[nusers], buf);
+				strcat(users[nusers], ": ");
 				nusers++;
+				strcat(buf, welcomeS);
+				for (i = 0; i < nusers; i++)
+                                	sendto(sockfd, buf, nread + sizeof(welcomeS), 0,
+						 (struct sockaddr *) &their_addr[i], their_addr_len[i]);
+				bzero(buf, BUF_SIZE);
+				continue;
 			}
 			else
 			{
 				sendto(sockfd, denyS, sizeof(denyS), 0, (struct sockaddr *) &temp_addr, temp_addr_len);
+				bzero(buf, BUF_SIZE);
 				continue;
 			}
 		}
-		if (0 == strncmp(buf, exitS, EXIT_LEN))
+		for (i = 0; i < nusers; i++)
+		{
+			if (0 == memcmp(&their_addr[i], &temp_addr, sizeof(struct sockaddr_in)))
+				current = i;
+		}
+		if (0 == strncmp(buf, "exit", 4))
 		{
 			close(sockfd);
 			printf("Server listening end.\r\n");
 			exit(EXIT_SUCCESS);
 		}
-		if (0 == strncmp(buf, closeS, CLOSE_LEN))
+		if (0 == strncmp(buf, "close", 5))
 		{
+			for (i = 0; i < nusers; i++)
+                        	sendto(sockfd, strcat(users[current], "has left the chat!\r\n"), sizeof(users[current]) + 20, 0,
+                                	(struct sockaddr *) &their_addr[i], their_addr_len[i]);
+			bzero(users[current], sizeof(users[current]));
 			removeClient(temp_addr, temp_addr_len, their_addr, their_addr_len, nusers);
 			nusers--;
 			continue;
 		}
 		buf[nread] = '\0';
 		for (i = 0; i < nusers; i++)
+		{
 			if (0 != memcmp(&their_addr[i], &temp_addr, sizeof(struct sockaddr_in)))
+			{
+				sendto(sockfd, users[current], sizeof(users[current]), 0, (struct sockaddr *) &their_addr[i], their_addr_len[i]);
 				sendto(sockfd, buf, nread, 0, (struct sockaddr *) &their_addr[i], their_addr_len[i]);
-		printf("%s", buf);
+			}
+		}
+		bzero(buf, BUF_SIZE);
 	}
 }
 
