@@ -71,6 +71,16 @@ int main(int argc, char *argv[])
 				buf_out[nout] = '\0';
 				nout++;
 				write(sockfd, buf_out, nout);
+				if (0 == strncmp(buf_out, "close", 5))
+				{
+					printf("You have left the server.\r\n");
+					exit(EXIT_SUCCESS);
+				}
+				if (0 == strncmp(buf_out, "exit", 4))
+				{
+					printf("You have closed the server.\r\n");
+					exit(EXIT_SUCCESS);
+				}
 				nout = 0;
 			}
 		}

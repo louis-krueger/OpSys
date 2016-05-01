@@ -13,8 +13,10 @@
 #define MAX_USERNAME_LEN 16
 #define BUF_SIZE 1000
 
-int isNewClient(struct sockaddr_in, int, struct sockaddr_in [], int [], int);
-void removeClient(struct sockaddr_in, int, struct sockaddr_in [], int [], int);
+int isNewClient(struct sockaddr_in, struct sockaddr_in [], int);
+void removeClient(struct sockaddr_in, struct sockaddr_in [], int [], int);
+
+char users[MAX_USERS][MAX_USERNAME_LEN];
 
 int main(int argc, char *argv[])
 {
@@ -23,7 +25,6 @@ int main(int argc, char *argv[])
   	struct sockaddr_in my_addr, temp_addr, their_addr[MAX_USERS];
   	char buf[BUF_SIZE], denyS[] = "Sorry the chat server is full.\r\n", 
 		welcomeS[] = " has entered the chat!\r\n\0";
-	char users[MAX_USERS][MAX_USERNAME_LEN];
 	/* END OF DATA INITILIZATION */
 	/* ERROR CHECKING */
 	if (argc != 2)
@@ -57,7 +58,7 @@ int main(int argc, char *argv[])
 			(struct sockaddr *) &temp_addr, &temp_addr_len);
 		if (nread == 0)
 			continue;
-		if (isNewClient(temp_addr, temp_addr_len, their_addr, their_addr_len, nusers))
+		if (isNewClient(temp_addr, their_addr, nusers))
 		{
 			if (nusers < 5)
 			{
@@ -68,8 +69,10 @@ int main(int argc, char *argv[])
 				nusers++;
 				strcat(buf, welcomeS);
 				for (i = 0; i < nusers; i++)
-                                	sendto(sockfd, buf, nread + sizeof(welcomeS), 0,
-						 (struct sockaddr *) &their_addr[i], their_addr_len[i]);
+				{
+					sendto(sockfd, buf, nread + sizeof(welcomeS), 0,
+						(struct sockaddr *) &their_addr[i], their_addr_len[i]);
+				}
 				bzero(buf, BUF_SIZE);
 				continue;
 			}
@@ -94,10 +97,13 @@ int main(int argc, char *argv[])
 		if (0 == strncmp(buf, "close", 5))
 		{
 			for (i = 0; i < nusers; i++)
-                        	sendto(sockfd, strcat(users[current], "has left the chat!\r\n"), sizeof(users[current]) + 20, 0,
+			{
+                        	sendto(sockfd, users[current], sizeof(users[current]), 0,
                                 	(struct sockaddr *) &their_addr[i], their_addr_len[i]);
-			bzero(users[current], sizeof(users[current]));
-			removeClient(temp_addr, temp_addr_len, their_addr, their_addr_len, nusers);
+                        	sendto(sockfd, "has left the chat!\r\n", 20, 0,
+                                	(struct sockaddr *) &their_addr[i], their_addr_len[i]);
+			}
+			removeClient(temp_addr, their_addr, their_addr_len, nusers);
 			nusers--;
 			continue;
 		}
@@ -114,7 +120,7 @@ int main(int argc, char *argv[])
 	}
 }
 
-int isNewClient(struct sockaddr_in new_addr, int new_addr_len, struct sockaddr_in old_addr[], int old_addr_len[], int nusers)
+int isNewClient(struct sockaddr_in new_addr, struct sockaddr_in old_addr[], int nusers)
 {
 	int i;
 	for (i = 0; i < nusers; i++)
@@ -125,7 +131,7 @@ int isNewClient(struct sockaddr_in new_addr, int new_addr_len, struct sockaddr_i
 	return 1;
 }
 
-void removeClient(struct sockaddr_in new_addr, int new_addr_len, struct sockaddr_in old_addr[], int old_addr_len[], int nusers)
+void removeClient(struct sockaddr_in new_addr, struct sockaddr_in old_addr[], int old_addr_len[], int nusers)
 {
 	int i;
 	for (i = 0; i < nusers; i++)
@@ -138,6 +144,7 @@ void removeClient(struct sockaddr_in new_addr, int new_addr_len, struct sockaddr
 		{
 			old_addr[i] = old_addr[nusers - 1];
 			old_addr_len[i] = old_addr_len[nusers - 1];
+			strcpy(users[i], users[nusers - 1]);
 			break;
 		}
 	}
