@@ -21,7 +21,7 @@ char users[MAX_USERS][MAX_USERNAME_LEN];
 int main(int argc, char *argv[])
 {
 	/* DATA INITILIZATION */
-	int sockfd, myport, nread, temp_addr_len, their_addr_len[MAX_USERS], i, nusers = 0, current;
+	int sockfd, myport, nread, temp_addr_len, their_addr_len[MAX_USERS], i, nusers = 0, current = 0;
   	struct sockaddr_in my_addr, temp_addr, their_addr[MAX_USERS];
   	char buf[BUF_SIZE], denyS[] = "Sorry the chat server is full.\r\n", 
 		welcomeS[] = " has entered the chat!\r\n\0";
@@ -105,6 +105,17 @@ int main(int argc, char *argv[])
 			}
 			removeClient(temp_addr, their_addr, their_addr_len, nusers);
 			nusers--;
+			continue;
+		}
+		if (0 == strncmp(buf, "list", 4))
+                {
+			for (i = 0; i < nusers; i++)
+                        {
+                                sendto(sockfd, users[i], sizeof(users[i]), 0,
+                                        (struct sockaddr *) &their_addr[current], their_addr_len[current]);
+                                sendto(sockfd, "\r\n", 2, 0,
+                                        (struct sockaddr *) &their_addr[current], their_addr_len[current]);
+                	}
 			continue;
 		}
 		buf[nread] = '\0';
