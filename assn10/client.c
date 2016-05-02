@@ -16,8 +16,6 @@
 #define MAX_USERNAME_LEN 16
 #define BUF_SIZE 1000
 
-//char* hostname(char*);
-
 int main(int argc, char *argv[])
 {
         /* DATA INITILIZATION */
@@ -48,12 +46,14 @@ int main(int argc, char *argv[])
    	serv_addr.sin_port = htons(serv_port);
    	if (connect(sockfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) < 0) 
 	{
+		close(sockfd);
       		fprintf(stderr, "Failed to connect to server!\r\n");
       		exit(EXIT_FAILURE);
    	}
         /* END OF PORT SET UP */
 	if ((pid = fork()) < 0)
 	{
+		close(sockfd);
 		printf("Failed to fork!\r\n");
 		exit(EXIT_FAILURE);
 	}
@@ -71,16 +71,6 @@ int main(int argc, char *argv[])
 				buf_out[nout] = '\0';
 				nout++;
 				write(sockfd, buf_out, nout);
-				if (0 == strncmp(buf_out, "close", 5))
-				{
-					printf("You have left the server.\r\n");
-					exit(EXIT_SUCCESS);
-				}
-				if (0 == strncmp(buf_out, "exit", 4))
-				{
-					printf("You have closed the server.\r\n");
-					exit(EXIT_SUCCESS);
-				}
 				nout = 0;
 			}
 		}
@@ -92,6 +82,18 @@ int main(int argc, char *argv[])
 			nread = read(sockfd, buf_in, BUF_SIZE);
 			if (nread == 0)
                         	continue;
+			if (0 == strncmp(buf_in, "exit", 4))
+			{
+				printf("The server has closed.\r\n");
+				close(sockfd);
+				exit(EXIT_SUCCESS);
+			}
+			if (0 == strncmp(buf_in, "close", 5))
+                        {
+                                printf("You have left the server.\r\n");
+                                close(sockfd);
+                                exit(EXIT_SUCCESS);
+                        }
 			buf_in[nread] = '\0';
 			printf("%s", buf_in);
 		}
