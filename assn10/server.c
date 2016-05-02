@@ -86,15 +86,36 @@ int main(int argc, char *argv[])
 				strcpy(user_tab[nusers].color, color_pool[(color_index++) % 6]);
 				current = nusers;
 				nusers++;
+				sendto(sockfd, "Commands:\nclose\nexit\nlist\n?\n", 28, 0,
+                                        (struct sockaddr *) &user_tab[current].addr, user_tab[current].addr_len);
+				sendto(sockfd, "Current Users:\n", 15, 0,
+                                                (struct sockaddr *) &user_tab[current].addr, user_tab[current].addr_len);
+                        	for (i = 0; i < nusers; i++)
+                        	{
+                                	sendto(sockfd, user_tab[i].color, sizeof(user_tab[i].color), 0,
+                                                (struct sockaddr *) &user_tab[current].addr, user_tab[current].addr_len);
+                                	sendto(sockfd, user_tab[i].name, sizeof(user_tab[i].name), 0,
+                                        	(struct sockaddr *) &user_tab[current].addr, user_tab[current].addr_len);
+                                	sendto(sockfd, RESET, sizeof(RESET), 0,
+                                        	(struct sockaddr *) &user_tab[current].addr, user_tab[current].addr_len);
+                        	}
 				strcat(buf, welcomeS);
 				for (i = 0; i < nusers; i++)
 				{
-					sendto(sockfd, user_tab[current].color, sizeof(user_tab[current].color), 0,
-                                                (struct sockaddr *) &user_tab[i].addr, user_tab[i].addr_len);
-					sendto(sockfd, buf, nread + sizeof(welcomeS), 0,
-						(struct sockaddr *) &user_tab[i].addr, user_tab[i].addr_len);
-					sendto(sockfd, RESET, sizeof(RESET), 0,
-                                                (struct sockaddr *) &user_tab[i].addr, user_tab[i].addr_len);
+					if (0 != memcmp(&user_tab[i].addr, &temp_addr, sizeof(struct sockaddr_in)))
+					{
+						sendto(sockfd, user_tab[current].color, sizeof(user_tab[current].color), 0,
+                                                	(struct sockaddr *) &user_tab[i].addr, user_tab[i].addr_len);
+						sendto(sockfd, buf, nread + sizeof(welcomeS), 0,
+							(struct sockaddr *) &user_tab[i].addr, user_tab[i].addr_len);
+						sendto(sockfd, RESET, sizeof(RESET), 0,
+                                                	(struct sockaddr *) &user_tab[i].addr, user_tab[i].addr_len);
+					}
+					else
+					{
+						sendto(sockfd, "Welcome to the chat!\n", 21, 0,
+                                                        (struct sockaddr *) &user_tab[i].addr, user_tab[i].addr_len);
+					}
 				}
 				bzero(buf, BUF_SIZE);
 				continue;
