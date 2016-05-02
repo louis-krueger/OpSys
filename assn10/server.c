@@ -21,18 +21,25 @@
 #define CYAN    "\x1b[36m"
 #define RESET   "\x1b[0m\n"
 
-int isNewClient(struct sockaddr_in, struct sockaddr_in [], int);
-void removeClient(struct sockaddr_in, struct sockaddr_in [], int [], int);
+struct user
+{
+	struct sockaddr_in addr;
+	int addr_len;
+	char name[MAX_USERNAME_LEN];
+	char color[5];
+};
 
-char users[MAX_USERS][MAX_USERNAME_LEN];
-char user_color[MAX_USERS][5];
+int isNewClient(struct sockaddr_in, int);
+void removeClient(struct sockaddr_in, int);
+
+struct user user_tab[MAX_USERS];
 char color_pool[7][5] = {RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN};
 
 int main(int argc, char *argv[])
 {
 	/* DATA INITILIZATION */
-	int sockfd, myport, nread, temp_addr_len, their_addr_len[MAX_USERS], i, nusers = 0, current = 0, color_index = 0;;
-  	struct sockaddr_in my_addr, temp_addr, their_addr[MAX_USERS];
+	int sockfd, myport, nread, temp_addr_len, i, nusers = 0, current = 0, color_index = 0;;
+  	struct sockaddr_in my_addr, temp_addr;
   	char buf[BUF_SIZE], denyS[] = "Sorry the chat server is full.\r\n", 
 		welcomeS[] = " has entered the chat!";
 	/* END OF DATA INITILIZATION */
@@ -68,26 +75,26 @@ int main(int argc, char *argv[])
 			(struct sockaddr *) &temp_addr, &temp_addr_len);
 		if (nread == 0)
 			continue;
-		if (isNewClient(temp_addr, their_addr, nusers))
+		if (isNewClient(temp_addr, nusers))
 		{
 			if (nusers < 5)
 			{
-				their_addr[nusers] = temp_addr;
-				their_addr_len[nusers] = temp_addr_len;
-				strcpy(users[nusers], buf);
-				strcat(users[nusers], ": ");
-				strcpy(user_color[nusers], color_pool[(color_index++) % 6]);
+				user_tab[nusers].addr = temp_addr;
+				user_tab[nusers].addr_len = temp_addr_len;
+				strcpy(user_tab[nusers].name, buf);
+				strcat(user_tab[nusers].name, ": ");
+				strcpy(user_tab[nusers].color, color_pool[(color_index++) % 6]);
 				current = nusers;
 				nusers++;
 				strcat(buf, welcomeS);
 				for (i = 0; i < nusers; i++)
 				{
-					sendto(sockfd, user_color[current], sizeof(user_color[current]), 0,
-                                                (struct sockaddr *) &their_addr[i], their_addr_len[i]);
+					sendto(sockfd, user_tab[current].color, sizeof(user_tab[current].color), 0,
+                                                (struct sockaddr *) &user_tab[i].addr, user_tab[i].addr_len);
 					sendto(sockfd, buf, nread + sizeof(welcomeS), 0,
-						(struct sockaddr *) &their_addr[i], their_addr_len[i]);
+						(struct sockaddr *) &user_tab[i].addr, user_tab[i].addr_len);
 					sendto(sockfd, RESET, sizeof(RESET), 0,
-                                                (struct sockaddr *) &their_addr[i], their_addr_len[i]);
+                                                (struct sockaddr *) &user_tab[i].addr, user_tab[i].addr_len);
 				}
 				bzero(buf, BUF_SIZE);
 				continue;
@@ -101,14 +108,14 @@ int main(int argc, char *argv[])
 		}
 		for (i = 0; i < nusers; i++)
 		{
-			if (0 == memcmp(&their_addr[i], &temp_addr, sizeof(struct sockaddr_in)))
+			if (0 == memcmp(&user_tab[i].addr, &temp_addr, sizeof(struct sockaddr_in)))
 				current = i;
 		}
 		if (0 == strncmp(buf, "exit", 4))
 		{
 			for (i = 0; i < nusers; i++)
                 	{
-                                sendto(sockfd, buf, nread, 0, (struct sockaddr *) &their_addr[i], their_addr_len[i]);
+                                sendto(sockfd, buf, nread, 0, (struct sockaddr *) &user_tab[i].addr, user_tab[i].addr_len);
                 	}
 			close(sockfd);
 			printf("Server listening end.\r\n");
@@ -118,74 +125,84 @@ int main(int argc, char *argv[])
 		{
 			for (i = 0; i < nusers; i++)
 			{
-				if (0 != memcmp(&their_addr[i], &temp_addr, sizeof(struct sockaddr_in)))
+				if (0 != memcmp(&user_tab[i].addr, &temp_addr, sizeof(struct sockaddr_in)))
 				{
-                        		sendto(sockfd, users[current], sizeof(users[current]), 0,
-                                		(struct sockaddr *) &their_addr[i], their_addr_len[i]);
+                        		sendto(sockfd, user_tab[current].name, sizeof(user_tab[current].name), 0,
+                                		(struct sockaddr *) &user_tab[i].addr, user_tab[i].addr_len);
                         		sendto(sockfd, "has left the chat!\r\n", 20, 0,
-                                		(struct sockaddr *) &their_addr[i], their_addr_len[i]);
+                                		(struct sockaddr *) &user_tab[i].addr, user_tab[i].addr_len);
 				}
 				else
 				{
-					sendto(sockfd, buf, nread, 0, (struct sockaddr *) &their_addr[i], their_addr_len[i]);
+					sendto(sockfd, buf, nread, 0, (struct sockaddr *) &user_tab[i].addr, user_tab[i].addr_len);
 				}
 			}
-			removeClient(temp_addr, their_addr, their_addr_len, nusers);
+			removeClient(temp_addr, nusers);
 			nusers--;
 			continue;
 		}
 		if (0 == strncmp(buf, "list", 4))
                 {
+			sendto(sockfd, "Current Users:\n", 15, 0,
+                                                (struct sockaddr *) &user_tab[current].addr, user_tab[current].addr_len);
 			for (i = 0; i < nusers; i++)
                         {
-                                sendto(sockfd, users[i], sizeof(users[i]), 0,
-                                        (struct sockaddr *) &their_addr[current], their_addr_len[current]);
-                                sendto(sockfd, "\r\n", 2, 0,
-                                        (struct sockaddr *) &their_addr[current], their_addr_len[current]);
+				sendto(sockfd, user_tab[i].color, sizeof(user_tab[i].color), 0,
+                                                (struct sockaddr *) &user_tab[current].addr, user_tab[current].addr_len);
+                                sendto(sockfd, user_tab[i].name, sizeof(user_tab[i].name), 0,
+                                        (struct sockaddr *) &user_tab[current].addr, user_tab[current].addr_len);
+                                sendto(sockfd, RESET, sizeof(RESET), 0,
+                                        (struct sockaddr *) &user_tab[current].addr, user_tab[current].addr_len);
                 	}
+			continue;
+		}
+		if (0 == strncmp(buf, "?", 1))
+		{
+			sendto(sockfd, "Commands:\nclose\nexit\nlist\n?\n", 28, 0,
+                                        (struct sockaddr *) &user_tab[current].addr, user_tab[current].addr_len);
 			continue;
 		}
 		for (i = 0; i < nusers; i++)
 		{
-			if (0 != memcmp(&their_addr[i], &temp_addr, sizeof(struct sockaddr_in)))
+			if (0 != memcmp(&user_tab[i].addr, &temp_addr, sizeof(struct sockaddr_in)))
 			{
-				sendto(sockfd, user_color[current], sizeof(user_color[current]), 0,
-                                                (struct sockaddr *) &their_addr[i], their_addr_len[i]);
-				sendto(sockfd, users[current], sizeof(users[current]), 0, (struct sockaddr *) &their_addr[i], their_addr_len[i]);
-				sendto(sockfd, buf, nread, 0, (struct sockaddr *) &their_addr[i], their_addr_len[i]);
-				sendto(sockfd, RESET, sizeof(RESET), 0,
-                                                (struct sockaddr *) &their_addr[i], their_addr_len[i]);
+				sendto(sockfd, user_tab[current].color, sizeof(user_tab[current].color), 0,
+                                                (struct sockaddr *) &user_tab[i].addr, user_tab[i].addr_len);
+				sendto(sockfd, user_tab[current].name, sizeof(user_tab[current].name), 0, 
+						(struct sockaddr *) &user_tab[i].addr, user_tab[i].addr_len);
+				sendto(sockfd, strcat(buf, RESET), nread + sizeof(RESET), 0, 
+						(struct sockaddr *) &user_tab[i].addr, user_tab[i].addr_len);
 			}
 		}
 		bzero(buf, BUF_SIZE);
 	}
 }
 
-int isNewClient(struct sockaddr_in new_addr, struct sockaddr_in old_addr[], int nusers)
+int isNewClient(struct sockaddr_in new_addr, int nusers)
 {
 	int i;
 	for (i = 0; i < nusers; i++)
 	{
-		if (0 == memcmp(&old_addr[i], &new_addr, sizeof(struct sockaddr_in)))
+		if (0 == memcmp(&user_tab[i].addr, &new_addr, sizeof(struct sockaddr_in)))
 			return 0;
 	}
 	return 1;
 }
 
-void removeClient(struct sockaddr_in new_addr, struct sockaddr_in old_addr[], int old_addr_len[], int nusers)
+void removeClient(struct sockaddr_in new_addr, int nusers)
 {
 	int i;
 	for (i = 0; i < nusers; i++)
 	{
-		if ((i == nusers - 1) && 0 == memcmp(&old_addr[i], &new_addr, sizeof(struct sockaddr_in)))
+		if ((i == nusers - 1) && 0 == memcmp(&user_tab[i].addr, &new_addr, sizeof(struct sockaddr_in)))
 		{
 			break;
 		}
-		else if (0 == memcmp(&old_addr[i], &new_addr, sizeof(struct sockaddr_in)))
+		else if (0 == memcmp(&user_tab[i].addr, &new_addr, sizeof(struct sockaddr_in)))
 		{
-			old_addr[i] = old_addr[nusers - 1];
-			old_addr_len[i] = old_addr_len[nusers - 1];
-			strcpy(users[i], users[nusers - 1]);
+			user_tab[i].addr = user_tab[nusers - 1].addr;
+			user_tab[i].addr_len = user_tab[nusers - 1].addr_len;
+			strcpy(user_tab[i].name, user_tab[nusers - 1].name);
 			break;
 		}
 	}

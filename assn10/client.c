@@ -64,15 +64,16 @@ int main(int argc, char *argv[])
 		nout = 0;
 		while (((c = getchar()) != EOF))
 		{
-			buf_out[nout] = c;
-			nout++;
 			if (c == '\n')
 			{
 				buf_out[nout] = '\0';
 				nout++;
 				write(sockfd, buf_out, nout);
 				nout = 0;
+				continue;
 			}
+			buf_out[nout] = c;
+			nout++;
 		}
 	}
 	else
