@@ -52,17 +52,21 @@ int main(int argc, char *argv[])
    	}
         /* END OF PORT SET UP */
 	if ((pid = fork()) < 0)
+	// Fork to set up reading and I/O proccesses
 	{
 		close(sockfd);
 		printf("Failed to fork!\r\n");
 		exit(EXIT_FAILURE);
 	}
 	if (pid == 0)
+	// Child process, the writing process.
+	// First execution sends nickname to server.
 	{
 		strcpy(name, argv[3]);
 		write(sockfd, name, sizeof(name));
 		nout = 0;
 		while (((c = getchar()) != EOF))
+		// Input loop that writes to server.
 		{
 			if (c == '\n')
 			{
@@ -75,8 +79,12 @@ int main(int argc, char *argv[])
 			buf_out[nout] = c;
 			nout++;
 		}
+		close(sockfd);
+                exit(EXIT_SUCCESS);
 	}
 	else
+	// Parent process, the reading process.
+	// Infinitly reads and prints until we get a program ending read.
 	{
 		while(1)
 		{
@@ -84,13 +92,15 @@ int main(int argc, char *argv[])
 			if (nread == 0)
                         	continue;
 			if (0 == strncmp(buf_in, "exit", 4))
+			// Close our connection if exit is received.
 			{
 				printf("The server has closed.\r\n");
 				close(sockfd);
 				exit(EXIT_SUCCESS);
 			}
 			if (0 == strncmp(buf_in, "close", 5))
-                        {
+                        // Close our connection if close is received.
+			{
                                 printf("You have left the server.\r\n");
                                 close(sockfd);
                                 exit(EXIT_SUCCESS);
@@ -99,4 +109,6 @@ int main(int argc, char *argv[])
 			printf("%s", buf_in);
 		}
 	}
+	close(sockfd);
+	return 1;
 }
